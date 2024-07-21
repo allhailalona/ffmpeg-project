@@ -1,10 +1,14 @@
 import { useEffect, useReducer } from "react"
 
+export interface Metadata {
+	name?: string
+	size?: number
+}
 export interface DirItem {
 	path: string
 	type?: string
 	isExpanded?: boolean
-	metadata?: any[]
+	metadata?: Metadata
 }
 
 interface Action {
@@ -35,7 +39,7 @@ export default function FileView(): JSX.Element {
 
 	//GET_DETAILS once the app runs, int he future this won't be the data I specified but the dropped paths
 	useEffect(() => {
-		const fetchDetails = async () => {
+		const fetchDetails = async (): Promise<void> => {
 			try {
 				const updatedExplorer = await window.electron.ipcRenderer.invoke('GET_DETAILS', explorer)
 				console.log('updatedExplorer is', updatedExplorer)
@@ -48,7 +52,24 @@ export default function FileView(): JSX.Element {
 		fetchDetails()
 	}, [])
 
+	const renderDirTree = (dirToRender: DirItem[]) => {
+		return dirToRender.map(dir => {
+			if (dir.type === 'folder') {
+				return <div key={dir.path}>
+					{dir.isExpanded ? '>' : '<'}
+					{dir.metadata?.[0]?.name || dir.path}
+				</div>
+			} else if (dir.type === 'file') {
+				return <div key={dir.path}>
+					 {dir.metadata?.[0]?.name || dir.path}
+				</div>
+			} 
+
+			return null
+		})
+	}
+
 	return (
-		<div>FileView</div>
+		<div>{renderDirTree(explorer)}</div>
 	)
 }
