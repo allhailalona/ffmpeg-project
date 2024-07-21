@@ -48,8 +48,10 @@ app.whenReady().then(() => {
     optimizer.watchWindowShortcuts(window)
   })
 
-  // IPC test
-  ipcMain.on('ping', () => console.log('pong'))
+  //add your ipcHandlers here
+  ipcMain.handle('GET_DETAILS', (event, explorer) => {
+    console.log(`hello from GET_DETAILS handler, the value recieved is alona`)
+  })
 
   createWindow()
 

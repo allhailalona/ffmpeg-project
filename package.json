@@ -6,7 +6,7 @@
   "author": "example.com",
   "homepage": "https://electron-vite.org",
   "scripts": {
-    "start": "nodemon --watch src --exec electron-vite dev"
+    "start": "nodemon --watch src/main/index.ts --exec electron-vite dev"
   },
   "dependencies": {
     "@electron-toolkit/preload": "^3.0.1",
