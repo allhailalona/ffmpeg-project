@@ -53,25 +53,8 @@ app.whenReady().then(() => {
   //add your ipcHandlers here
   ipcMain.handle('GET_DETAILS', async (event, explorer: DirItem[]) => {
     try {
-      const updatedExplorer = await Promise.all(explorer.map(async dir => {
-        try {
-          const stats = await fs.promises.stat(dir.path)
-
-          return {
-            ...dir, 
-            type: stats.isDirectory() ? 'folder' : 'file',
-            isExpanded: stats.isDirectory() ? 'false' : null,
-            metadata: stats.isDirectory() ? {
-              name: path.basename(dir.path),
-              size: stats.size
-            } : null //(coming soon)
-          }
-        } catch (err) {
-          console.error(`Error processing ${dir.path}:`, err);  
-        }
-      }))
-      
-      return updatedExplorer
+      const updatedExplorer = await Promise.all(explorer.map(getItemDetails));
+      return updatedExplorer;
     } catch (err) {
       console.error('Error in GET_DETAILS handler:', err);
     }
@@ -79,14 +62,25 @@ app.whenReady().then(() => {
 
   ipcMain.handle('TOGGLE_EXPAND', async (event, dirToToggle: DirItem) => {
     //dirToToggle must be passed as a whole to index.ts since we need to check the value of isExpanded
+    console.log('toggle detected')
     try {
       if(dirToToggle.isExpanded) {
-        const subDirs = await fs.promises.readdir(dirToToggle.path)
+        //find subfolders
+        const subfolders = await fs.promises.readdir(dirToToggle.path)
+        
+        //convert the to path then assign them to the subfolders item in the dirToToggle object
+        // Convert to path and assign to subfolders item in dirToToggle object
         const expandedDirToToggle = {
-          ...dirToToggle, 
-          subfolders: subDirs.map(subDir => ({path: path.join(dirToToggle.path, subDir)}))
-        }
-        console.log(expandedDirToToggle)
+          ...dirToToggle,
+          subfolders: await Promise.all(
+            //pay close attention! this is how u apply a function to each and one of the items in a certain array then rewrite them
+            subfolders.map(async (subfolder) => getItemDetails({ path: path.join(dirToToggle.path, subfolder) }))
+          )
+        };
+        
+        const filteredExpandedDirToToggle = expandedDirToToggle.subfolders.filter(dir => dir !== null)
+        console.log(JSON.stringify(filteredExpandedDirToToggle, null, 2));
+
       } else {
         console.log('dirToToggle is not expanded')
       }
@@ -94,6 +88,38 @@ app.whenReady().then(() => {
       console.error(err)
     }
   })
+
+  async function getItemDetails(dir: DirItem): Promise<DetailedDirItem> {
+    try {
+      const stats = await fs.promises.stat(dir.path);
+    
+      //different stats for folders and for files (and for symlinks in the future)
+      if (stats.isDirectory()) {
+        return {
+          ...dir,
+          type: 'folder',
+          isExpanded: false, 
+          metadata: {
+            name: path.basename(dir.path), //this is how we get the name of a folder
+            size: stats.size
+          }
+        }
+      } else if (stats.isFile()) {
+        return {
+          ...dir, 
+          type: 'file', 
+          metadata: {
+              name: path.basename(dir.path),
+              size: stats.size
+            }
+        }
+      }
+    } catch (err) {
+      console.error(`Couldn't detail ${dir.path}:`, err);
+      return null //null will appear anyways, I'm gonna filter it in the expand functino above
+    }
+
+  }
 
   createWindow()
 
