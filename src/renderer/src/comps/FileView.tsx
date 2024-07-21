@@ -1,6 +1,6 @@
 import { useEffect, useReducer } from "react"
 
-interface DirItem {
+export interface DirItem {
 	path: string
 	type?: string
 	isExpanded?: boolean
@@ -16,7 +16,7 @@ interface Action {
 function reducer(explorer: DirItem[], action: Action) {
 	switch (action.type) {
 		case 'GET_DETAILS':
-			//call GET_DETAILS
+			return action.payload
 		case 'TOGGLE_EXPAND':
 			//coming soon
 		default:
@@ -38,6 +38,7 @@ export default function FileView(): JSX.Element {
 		const fetchDetails = async () => {
 			try {
 				const updatedExplorer = await window.electron.ipcRenderer.invoke('GET_DETAILS', explorer)
+				console.log('updatedExplorer is', updatedExplorer)
 				dispatch({type: 'GET_DETAILS', payload: updatedExplorer})
 			} catch (err) {
 				console.error(err)
@@ -45,8 +46,7 @@ export default function FileView(): JSX.Element {
 		}
 
 		fetchDetails()
-	})
-
+	}, [])
 
 	return (
 		<div>FileView</div>

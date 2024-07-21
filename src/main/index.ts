@@ -1,5 +1,7 @@
 import { app, shell, BrowserWindow, ipcMain } from 'electron'
-import { join } from 'path'
+import path, { join } from 'path'
+import fs from 'fs'
+import { DirItem } from '../renderer/src/comps/FileView' //import the type interface so I can use it in handlers
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 
 function createWindow(): void {
@@ -49,8 +51,30 @@ app.whenReady().then(() => {
   })
 
   //add your ipcHandlers here
-  ipcMain.handle('GET_DETAILS', (event, explorer) => {
-    console.log(`hello from GET_DETAILS handler, the value recieved is alona`)
+  ipcMain.handle('GET_DETAILS', async (event, explorer: DirItem[]) => {
+    try {
+      const updatedExplorer = await Promise.all(explorer.map(async dir => {
+        try {
+          const stats = await fs.promises.stat(dir.path)
+
+          return {
+            ...dir, 
+            type: stats.isDirectory() ? 'folder' : 'file',
+            isExpanded: stats.isDirectory() ? 'false' : null,
+            metadata: stats.isDirectory() ? {
+              name: path.basename(dir.path),
+              size: stats.size
+            } : null //(coming soon)
+          }
+        } catch (err) {
+          console.error(`Error processing ${dir.path}:`, err);  
+        }
+      }))
+      
+      return updatedExplorer
+    } catch (err) {
+      console.error('Error in GET_DETAILS handler:', err);
+    }
   })
 
   createWindow()
