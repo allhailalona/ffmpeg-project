@@ -9,6 +9,7 @@ export interface DirItem {
 	type?: string
 	isExpanded?: boolean
 	metadata?: Metadata
+	subfolders?: DirItem[]
 }
 
 interface Action {
@@ -22,7 +23,9 @@ function reducer(explorer: DirItem[], action: Action) {
 		case 'GET_DETAILS':
 			return action.payload
 		case 'TOGGLE_EXPAND':
-			//coming soon
+			console.log(action.payload.dirToToggle.isExpanded)
+			action.payload.dirToToggle.isExpanded = !action.payload.dirToToggle.isExpanded
+			console.log(action.payload.dirToToggle.isExpanded)
 		default:
 			return explorer
 	}
@@ -42,7 +45,6 @@ export default function FileView(): JSX.Element {
 		const fetchDetails = async (): Promise<void> => {
 			try {
 				const updatedExplorer = await window.electron.ipcRenderer.invoke('GET_DETAILS', explorer)
-				console.log('updatedExplorer is', updatedExplorer)
 				dispatch({type: 'GET_DETAILS', payload: updatedExplorer})
 			} catch (err) {
 				console.error(err)
@@ -52,11 +54,23 @@ export default function FileView(): JSX.Element {
 		fetchDetails()
 	}, [])
 
+	const toggleExpand = async (dirToToggle: DirItem) => {
+		try {
+			//toggle clickedDir
+			dispatch({type: 'TOGGLE_EXPAND', payload: {dirToToggle: dirToToggle}})
+			//expand/collapse dir
+			const toggledDir = await window.electron.ipcRenderer.invoke('TOGGLE_EXPAND', dirToToggle)
+			//dispatch toggledDir to explorer in the futrue and make sure te update belongs tot he right location
+		} catch (err) {
+			console.error(err)
+		}
+	}
+
 	const renderDirTree = (dirToRender: DirItem[]) => {
 		return dirToRender.map(dir => {
 			if (dir.type === 'folder') {
 				return <div key={dir.path}>
-					{dir.isExpanded ? '>' : '<'}
+					<a onClick={() => toggleExpand(dir)}>{dir.isExpanded ? '>' : '<'}</a>
 					{dir.metadata?.[0]?.name || dir.path}
 				</div>
 			} else if (dir.type === 'file') {

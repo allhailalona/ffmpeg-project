@@ -7,8 +7,8 @@ import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 function createWindow(): void {
   // Create the browser window.
   const mainWindow = new BrowserWindow({
-    width: 900,
-    height: 670,
+    width: 400,
+    height: 300,
     show: false,
     autoHideMenuBar: true,
     ...(process.platform === 'linux' ? { icon } : {}),
@@ -74,6 +74,24 @@ app.whenReady().then(() => {
       return updatedExplorer
     } catch (err) {
       console.error('Error in GET_DETAILS handler:', err);
+    }
+  })
+
+  ipcMain.handle('TOGGLE_EXPAND', async (event, dirToToggle: DirItem) => {
+    //dirToToggle must be passed as a whole to index.ts since we need to check the value of isExpanded
+    try {
+      if(dirToToggle.isExpanded) {
+        const subDirs = await fs.promises.readdir(dirToToggle.path)
+        const expandedDirToToggle = {
+          ...dirToToggle, 
+          subfolders: subDirs.map(subDir => ({path: path.join(dirToToggle.path, subDir)}))
+        }
+        console.log(expandedDirToToggle)
+      } else {
+        console.log('dirToToggle is not expanded')
+      }
+    } catch (err) {
+      console.error(err)
     }
   })
 
