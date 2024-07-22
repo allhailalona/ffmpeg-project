@@ -52,35 +52,58 @@ app.whenReady().then(() => {
 
   //add your ipcHandlers here
   ipcMain.handle('GET_DETAILS', async (event, explorer: DirItem[]) => {
-    try {
-      const updatedExplorer = await Promise.all(explorer.map(getItemDetails));
-      return updatedExplorer;
-    } catch (err) {
+    //the problem Gal found was HERE! check on youtube how to use promise.all settler
+    return Promise.allSettled(explorer.map(dir => {
+      return getItemDetails(dir)
+    }))
+    .then(results => {
+      const updatedExplorer = results.map((result, index) => {
+        if (result.status === 'fulfilled') {
+          //if the value is okay, insert it to the array in the proper location
+          return {...explorer[index], ...result.value}
+        } else {
+          //if it's not, don't insert it (avoid nulls this)
+          console.error(`Error processing dir ${index}:`, result.reason);
+          return explorer[index]; // Return original item if there was an error
+        }
+      })
+      console.log(updatedExplorer)
+      return updatedExplorer
+    })
+    .catch(err => {
       console.error('Error in GET_DETAILS handler:', err);
-    }
+      throw err; // Re-throw the error to be handled by the caller
+    })
   })
 
-  ipcMain.handle('TOGGLE_EXPAND', async (event, dirToToggle: DirItem) => {
+  ipcMain.handle('TOGGLE_EXPAND', async (event, dirToToggle: DirItem): Promise<DirItem> => {
     //dirToToggle must be passed as a whole to index.ts since we need to check the value of isExpanded
-    console.log('toggle detected')
     try {
       if(dirToToggle.isExpanded) {
         //find subfolders
         const subfolders = await fs.promises.readdir(dirToToggle.path)
         
-        //convert the to path then assign them to the subfolders item in the dirToToggle object
-        // Convert to path and assign to subfolders item in dirToToggle object
-        const expandedDirToToggle = {
-          ...dirToToggle,
-          subfolders: await Promise.all(
-            //pay close attention! this is how u apply a function to each and one of the items in a certain array then rewrite them
-            subfolders.map(async (subfolder) => getItemDetails({ path: path.join(dirToToggle.path, subfolder) }))
-          )
-        };
-        
-        const filteredExpandedDirToToggle = expandedDirToToggle.subfolders.filter(dir => dir !== null)
-        console.log(JSON.stringify(filteredExpandedDirToToggle, null, 2));
+        //create a path value for each dir
+        const expandedDirToToggle = subfolders.map(dir => ({path: path.join(dirToToggle.path, dir)}))
 
+        //detail each path item, since we're inside try{} and not .then() we need to use await
+        await Promise.allSettled(expandedDirToToggle.map(dir => {
+          return getItemDetails(dir)
+        })).then(results => {
+          const detailedExpandedDirToToggle = results.map((result, index) => {
+            if (result.status === 'fulfilled') {
+              return {...expandedDirToToggle[index], ...result.value}
+            } else {
+              console.error('Error calling detail from TOGGLE_EXPAND')
+              return expandedDirToToggle[index]
+            }
+          })
+          console.log('detailed expanded list: ', detailedExpandedDirToToggle)
+          return detailedExpandedDirToToggle
+        }).catch(err => {
+          console.error('Error in TOGGLE_EXPAND detailing handler:', err);
+          throw err;
+        })
       } else {
         console.log('dirToToggle is not expanded')
       }
@@ -89,7 +112,8 @@ app.whenReady().then(() => {
     }
   })
 
-  async function getItemDetails(dir: DirItem): Promise<DetailedDirItem> {
+  async function getItemDetails(dir: DirItem) {
+    console.log('hello from getItemDetails, detail recieved is')
     try {
       const stats = await fs.promises.stat(dir.path);
     
@@ -101,7 +125,7 @@ app.whenReady().then(() => {
           isExpanded: false, 
           metadata: {
             name: path.basename(dir.path), //this is how we get the name of a folder
-            size: stats.size
+            size: stats.size //improvements required - display sized of subcontents for folders and show mb/kb/gb etc
           }
         }
       } else if (stats.isFile()) {

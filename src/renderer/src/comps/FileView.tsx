@@ -24,9 +24,12 @@ function reducer(explorer: DirItem[], action: Action) {
 			console.log(action.payload)
 			return action.payload
 		case 'TOGGLE_EXPAND':
-			console.log(action.payload.dirToToggle.isExpanded)
-			action.payload.dirToToggle.isExpanded = !action.payload.dirToToggle.isExpanded
-			console.log(action.payload.dirToToggle.isExpanded)
+			if(action.payload.dirToToggle !== undefined) {
+				action.payload.dirToToggle.isExpanded = !action.payload.dirToToggle.isExpanded
+			} else if (action.payload.toggledDir !== undefined) {
+				console.log('allhailhitler')
+				console.log(action.payload.toggledDir)
+			}
 		default:
 			return explorer
 	}
@@ -64,10 +67,13 @@ export default function FileView(): JSX.Element {
 			setIsLoading(true)
 			//toggle clickedDir
 			dispatch({type: 'TOGGLE_EXPAND', payload: {dirToToggle: dirToToggle}})
+
 			//expand/collapse dir
 			const toggledDir = await window.electron.ipcRenderer.invoke('TOGGLE_EXPAND', dirToToggle)
-			console.log(`from renderer: ${toggledDir}`)
+
 			//update explorer 
+			console.log('calling update dispatch')
+			dispatch({type: 'TOGGLE_EXPAND', payload: {toggledDir: toggledDir}})
 		} catch (err) {
 			console.error(err)
 		} finally {
