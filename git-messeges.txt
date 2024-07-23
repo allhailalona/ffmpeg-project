@@ -1,0 +1,4 @@
+filesdropzone/1
+	open dev pane by default when on dev mode
+	implement dnd and manipulate output of e.dataTransfer.files
+	implement functionality to dispatch reducer to update explorer
