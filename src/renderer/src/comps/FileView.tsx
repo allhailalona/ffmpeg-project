@@ -1,3 +1,4 @@
+import { dir } from "console"
 import { useState, useEffect, useReducer } from "react"
 
 export interface Metadata {
@@ -22,7 +23,7 @@ function updateExplorerRecursively(dirs: DirItem[], parentDir: DirItem, subfolde
 		if(dir.path === parentDir.path) {
 			const updatedDir = {
 				...dir, 
-				subfolders: subfolders
+				subfolders
 			}
 			console.log('found and added ', updatedDir)
 			return updatedDir
@@ -33,7 +34,8 @@ function updateExplorerRecursively(dirs: DirItem[], parentDir: DirItem, subfolde
 				subfolders: updateExplorerRecursively(dir.subfolders, parentDir, subfolders)
 			}
 		}
-		//if nothing was found
+		//since the function stops when a return is issued we know that by reaching here, nothing was found, which is--
+		//-why we can return dir without any chagnes
 		return dir
 	})
 }
@@ -42,8 +44,43 @@ function updateExplorerRecursively(dirs: DirItem[], parentDir: DirItem, subfolde
 function reducer(explorer: DirItem[], action: Action) {
 	switch (action.type) {
 		case 'GET_DETAILS':
-			console.log(action.payload.res)
-			return action.payload.res
+			//convert recieved array back to an object so  we can properly add it to the explorer
+			const dirToInsert = action.payload.res[0]
+			console.log('dirToInsert is:', dirToInsert)
+
+			const isPresent = (arr: DirItem[], targetPath: string): boolean => {
+				for (const dir of arr) {
+					console.log('first search')
+					if (dir.path === targetPath) {
+						return true
+					} else if (dir.subfolders) {
+						console.log('calling isPresent on sub directories')
+						if (isPresent(dir.subfolders, targetPath)) {
+							return true
+						}
+					}
+				}
+				//the function stops when a return is issued. reaching this point means the function--
+				//--DID NOT find the value we're looking for, thus it's false
+				return false
+			}
+
+			console.log('explorer is: ', explorer)
+	
+			let updatedExplorer: DirItem[]
+
+			if (isPresent(explorer, dirToInsert.path)) {
+				console.log('already exists, returning explorer AS IS')
+				updatedExplorer = [...explorer]
+			} else {
+				console.log('doesnt exist yet, updating explorer')
+				updatedExplorer = [
+					...explorer, 
+					dirToInsert
+				]
+			}
+
+			return updatedExplorer //replace explorer with updatedExplorer
 		case 'TOGGLE_EXPAND':
 			if(action.payload.dirToToggle !== undefined) {
 				//toggle dir upon click
@@ -104,7 +141,7 @@ export default function FileView(): JSX.Element {
 		})
 	}
 
-	const handleDragHover = (e: React.DragEvent<HTMLDivElement>) => {
+	const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
 		e.preventDefault()
 	}
 
@@ -113,10 +150,11 @@ export default function FileView(): JSX.Element {
 		try {
 			//since the output of e.dataTransfer.files is rather odd, we need to arrange it, so GET_DETAILS can read it
 			const droppedFiles = Array.from(e.dataTransfer.files).map(file => ({path: file.path}))
-			console.log(droppedFiles)
 		
+			//get res from electron API
 			const res = await window.electron.ipcRenderer.invoke('GET_DETAILS', droppedFiles)
-			console.log('res is', res)
+			
+			//update explorer with dispatch
 			dispatch({type: 'GET_DETAILS', payload: {res}})
 		} catch (err) {
 			console.error(err)
@@ -127,12 +165,12 @@ export default function FileView(): JSX.Element {
 
 	//make sure page contents are not loaded until async ops are done!
 	if (explorer.length === 0) {
-		return <div onDragOver={handleDragHover} onDrop={handleDrop} style={{height:'200px', backgroundColor: 'lightblue'}}>drop files here</div>
+		return <div onDragOver={handleDragOver} onDrop={handleDrop} style={{height:'200px', backgroundColor: 'lightblue'}}>drop files here</div>
 	} else if (isLoading) {
     return <div>Loading...</div>
   } else {
 		return (
-			<div>{renderDirTree(explorer)}</div>
+			<div onDragOver={handleDragOver} onDrop={handleDrop} style={{height:'200px', backgroundColor: 'lightblue'}}>{renderDirTree(explorer)}</div>
 		)
 	}
 }

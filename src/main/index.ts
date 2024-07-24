@@ -56,11 +56,6 @@ app.whenReady().then(() => {
     optimizer.watchWindowShortcuts(window)
   })
 
-  //add your ipcHandlers here
-  ipcMain.handle('alona', (event, value) => {
-    console.log(value)
-  })
-
   ipcMain.handle('GET_DETAILS', async (event, dirsToDetail: DirItem[] | []) => {
     console.log('welcome! dirsToDetail is ', dirsToDetail)
     //the problem Gal found was HERE! check on youtube how to use promise.all settler
