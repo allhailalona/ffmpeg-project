@@ -14,7 +14,7 @@ export interface DirItem {
 }
 
 interface Action {
-	type: 'GET_DETAILS' | 'TOGGLE_EXPAND'
+	type: 'ADD_DIRS' | 'TOGGLE_EXPAND'
 	payload?: any
 }
 
@@ -43,7 +43,7 @@ function updateExplorerRecursively(dirs: DirItem[], parentDir: DirItem, subfolde
 //the state is managed automatically and there is no need to explicitly pass it to the function
 function reducer(explorer: DirItem[], action: Action) {
 	switch (action.type) {
-		case 'GET_DETAILS':
+		case 'ADD_DIRS':
 			//convert recieved array back to an object so  we can properly add it to the explorer
 			const dirToInsert = action.payload.res[0]
 			console.log('dirToInsert is:', dirToInsert)
@@ -153,9 +153,26 @@ export default function FileView(): JSX.Element {
 		
 			//get res from electron API
 			const res = await window.electron.ipcRenderer.invoke('GET_DETAILS', droppedFiles)
-			
+
 			//update explorer with dispatch
-			dispatch({type: 'GET_DETAILS', payload: {res}})
+			dispatch({type: 'ADD_DIRS', payload: {res}})
+		} catch (err) {
+			console.error(err)
+		} finally {
+			setIsLoading(false)
+		}
+	}
+
+	const handleClick = async (type: string) => {
+		try {
+			setIsLoading(true)
+
+			const selectedFiles = await window.electron.ipcRenderer.invoke('SELECT_DIR_DIALOG', type)
+			const selectedFilesMod = selectedFiles.map(file => ({path: file}))
+			
+			const res = await window.electron.ipcRenderer.invoke('GET_DETAILS', selectedFilesMod)
+			
+			dispatch({type: 'ADD_DIRS', payload: {res}})
 		} catch (err) {
 			console.error(err)
 		} finally {
@@ -165,7 +182,10 @@ export default function FileView(): JSX.Element {
 
 	//make sure page contents are not loaded until async ops are done!
 	if (explorer.length === 0) {
-		return <div onDragOver={handleDragOver} onDrop={handleDrop} style={{height:'200px', backgroundColor: 'lightblue'}}>drop files here</div>
+		return <div onDragOver={handleDragOver} onDrop={handleDrop} style={{height:'200px', backgroundColor: 'lightblue'}}>
+			<button onClick={() => handleClick('folder')}>pick folders</button>
+			<button onClick={() => handleClick('file')}>pick files</button>
+		</div>
 	} else if (isLoading) {
     return <div>Loading...</div>
   } else {

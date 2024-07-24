@@ -1,4 +1,4 @@
-import { app, shell, BrowserWindow, ipcMain } from 'electron'
+import { app, shell, BrowserWindow, ipcMain, dialog } from 'electron'
 import path, { join } from 'path'
 import fs from 'fs'
 import { DirItem } from '../renderer/src/comps/FileView' //import the type interface so I can use it in handlers
@@ -116,6 +116,20 @@ app.whenReady().then(() => {
     } catch (err) {
       console.error(err)
       //don't forget to delete subfolders here!!!
+    }
+  })
+
+  ipcMain.handle('SELECT_DIR_DIALOG', async (event, type) => {
+    const res = await dialog.showOpenDialog({
+      properties: [type === 'folder' ? 'openDirectory' : 'openFile', 
+        'multiSelections'
+      ]
+    })
+
+    if (res.canceled) {
+      return null
+    } else {
+      return res.filePaths
     }
   })
 
