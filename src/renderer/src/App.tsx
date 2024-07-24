@@ -1,6 +1,6 @@
 import FileView from "./comps/FileView"
 
-function App(): JSX.Element {
+export default function App(): JSX.Element {
 
   return <div>
     <h1>hello from electron-vite</h1>
@@ -8,4 +8,3 @@ function App(): JSX.Element {
   </div>
 }
 
-export default App
