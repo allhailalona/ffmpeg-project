@@ -1,4 +1,4 @@
-restructuring/1
-	create ExplorerContext with a custom hook
-	move usage of useReducer in FileView.tsx to ExplorerContext
-	improve ts declarations then seperate them to types.ts
+restructuring/2
+	create severa more comps 
+	install tailwindcss then add minor styling
+	move content of env.d.ts to types.ts

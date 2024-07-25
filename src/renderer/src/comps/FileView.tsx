@@ -87,15 +87,15 @@ export default function FileView(): JSX.Element {
 
 	//make sure page contents are not loaded until async ops are done!
 	if (explorer.length === 0) {
-		return <div onDragOver={handleDragOver} onDrop={handleDrop} style={{height:'200px', backgroundColor: 'lightblue'}}>
-			<button onClick={() => handleClick('folder')}>pick folders</button>
-			<button onClick={() => handleClick('file')}>pick files</button>
+		return <div onDragOver={handleDragOver} onDrop={handleDrop} className="w-full h-[90%] p-2 border-white border-2 border-solid flex justify-center items-center">
+			<button onClick={() => handleClick('folder')} className="m-2 p-3 bg-green-200">pick folders</button>
+			<button onClick={() => handleClick('file')} className="m-2 p-3 bg-green-200">pick files</button>
 		</div>
 	} else if (isLoading) {
-    return <div>Loading...</div>
+    return <div className="w-full h-[90%] p-2 border-white border-2 border-solid flex justify-center items-center">Loading...</div>
   } else {
 		return (
-			<div onDragOver={handleDragOver} onDrop={handleDrop} style={{height:'200px', backgroundColor: 'lightblue'}}>{renderDirTree(explorer)}</div>
+			<div onDragOver={handleDragOver} onDrop={handleDrop} className="w-full h-[90%] p-2 border-white border-2 border-solid">{renderDirTree(explorer)}</div>
 		)
 	}
 }

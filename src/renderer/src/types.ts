@@ -1,3 +1,5 @@
+/// <reference types="vite/client" />
+
 export interface ExplorerContextType {
 	explorer: DirItem[]
 	dispatch: React.Dispatch<ExplorerAction>
