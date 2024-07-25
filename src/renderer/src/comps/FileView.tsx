@@ -1,4 +1,5 @@
 import { useState } from "react"
+import { DirItem } from '../types'
 import { useExplorer } from "@renderer/ctx/ExplorerContext"
 
 export default function FileView(): JSX.Element {
@@ -24,26 +25,6 @@ export default function FileView(): JSX.Element {
 		} finally {
 			setIsLoading(false)
 		}
-	}
-
-	const renderDirTree = (dirToRender: DirItem[]) => {
-		return dirToRender.map(dir => {
-			if (dir.type === 'folder') {
-				return <div key={dir.path}>
-					<a onClick={() => toggleExpand(dir)}>{dir.isExpanded ? '^  ' : 'v  '}</a>
-					{dir.metadata?.name || dir.path}
-					{dir.isExpanded && dir.subfolders && (
-							<div style={{marginLeft: '10px'}}>{renderDirTree(dir.subfolders)}</div>
-            )}
-				</div>
-			} else if (dir.type === 'file') {
-				return <div key={dir.path}>
-					 {dir.metadata?.name || dir.path}
-				</div>
-			} 
-
-			return null
-		})
 	}
 
 	const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
@@ -83,6 +64,26 @@ export default function FileView(): JSX.Element {
 		} finally {
 			setIsLoading(false)
 		}
+	}
+
+	const renderDirTree = (dirToRender: DirItem[]) => {
+		return dirToRender.map(dir => {
+			if (dir.type === 'folder') {
+				return <div key={dir.path}>
+					<a onClick={() => toggleExpand(dir)}>{dir.isExpanded ? '^  ' : 'v  '}</a>
+					{dir.metadata?.name || dir.path}
+					{dir.isExpanded && dir.subfolders && (
+							<div style={{marginLeft: '10px'}}>{renderDirTree(dir.subfolders)}</div>
+            )}
+				</div>
+			} else if (dir.type === 'file') {
+				return <div key={dir.path}>
+					 {dir.metadata?.name || dir.path}
+				</div>
+			} 
+
+			return null
+		})
 	}
 
 	//make sure page contents are not loaded until async ops are done!
