@@ -1,4 +1,12 @@
-restructuring/2
-	create severa more comps 
-	install tailwindcss then add minor styling
-	move content of env.d.ts to types.ts
+restructuring/4/bugfixes + basic columns view
+	failed to address the hebrew encoding issue: for now, hebrew paths cannot be processed
+	succesfully addressed the multiple files/folders loading bug by slighly adjusting the dispatch--
+	--functionality in context and the renderDirsTree function in FileView.tsx:
+	used a .reduce function instead of the const dir of action.payload.res, not really sure how it worked, neither I care
+	fix variety of ts issues
+
+	ExplorerContext n types.ts: ts proofing
+	ipc.ts: attempts to address the hebrew issue
+	FileView.ts: table view feature
+
+	

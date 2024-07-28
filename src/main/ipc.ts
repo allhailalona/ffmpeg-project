@@ -1,6 +1,8 @@
 import { ipcMain, dialog } from 'electron'
-import fs from 'fs'
+import fs from 'fs' //because we use promises, I forgot before
 import path from 'path'
+import iconv from 'iconv-lite'
+import jschardet from 'jschardet'
 import { DirItem } from '../renderer/src/types' //import the type interface so I can use it in handlers
 
 export default function setupIPC(): void {
@@ -10,10 +12,18 @@ export default function setupIPC(): void {
 }
 
 async function handleGetDetails(event, dirsToDetail: DirItem[] | []) {
-	console.log('welcome! dirsToDetail is ', dirsToDetail)
-	//the problem Gal found was HERE! check on youtube how to use promise.all settler
 	return Promise.allSettled(dirsToDetail.map(dir => {
-		return getItemDetails(dir)
+		//console log here for debugging, this solution currently DOES NOT work
+		const detection = jschardet.detect(dir.path)
+
+		const decodedPath = iconv.decode(Buffer.from(dir.path, 'binary'), detection.encoding)
+
+		const decodedDir = {
+			...dir, 
+			path: decodedPath
+		}
+
+		return getItemDetails(decodedDir)
 	}))
 	.then(results => {
 		const updatedDirsToDetail = results.map((result, index) => {
@@ -86,6 +96,7 @@ async function handleSelectDirDialog(event, type: string) {
 }
 
 async function getItemDetails(dir: DirItem) {
+	console.log('items to detail are', dir)
 	try {
 		const stats = await fs.promises.stat(dir.path);
 	

@@ -1,7 +1,7 @@
 import { createContext, useContext, useReducer} from "react";
-import { DirItem, ExplorerAction } from '../types'
+import { DirItem, ExplorerAction, ExplorerContextType } from '../types'
 
-const ExplorerContext = createContext()
+const ExplorerContext = createContext<ExplorerContextType | undefined>(undefined)
 
 function updateExplorerRecursively(dirs: DirItem[], parentDir: DirItem, subfolders?: DirItem[]): DirItem[] {
 	return dirs.map(dir => {
@@ -29,18 +29,15 @@ function updateExplorerRecursively(dirs: DirItem[], parentDir: DirItem, subfolde
 function reducer(explorer: DirItem[], action: ExplorerAction) {
 	switch (action.type) {
 		case 'ADD_DIRS':
-			//convert recieved array back to an object so  we can properly add it to the explorer
-			const dirToInsert = action.payload.res[0]
-			console.log('dirToInsert is:', dirToInsert)
-
-			const isPresent = (arr: DirItem[], targetPath: string): boolean => {
+			//convert recieved array back to an object so we can properly add it to the explorer
+			const isPresent = (arr: DirItem[], targetDir: DirItem): boolean => {
 				for (const dir of arr) {
 					console.log('first search')
-					if (dir.path === targetPath) {
+					if (dir.path === targetDir.path) {
 						return true
 					} else if (dir.subfolders) {
 						console.log('calling isPresent on sub directories')
-						if (isPresent(dir.subfolders, targetPath)) {
+						if (isPresent(dir.subfolders, targetDir)) {
 							return true
 						}
 					}
@@ -50,20 +47,13 @@ function reducer(explorer: DirItem[], action: ExplorerAction) {
 				return false
 			}
 
-			console.log('explorer is: ', explorer)
-	
-			let updatedExplorer: DirItem[]
-
-			if (isPresent(explorer, dirToInsert.path)) {
-				console.log('already exists, returning explorer AS IS')
-				updatedExplorer = [...explorer]
-			} else {
-				console.log('doesnt exist yet, updating explorer')
-				updatedExplorer = [
-					...explorer, 
-					dirToInsert
-				]
-			}
+			//a fairly complex .reduce function I got from Claude and have no energy to understand
+			const updatedExplorer = action.payload.res.reduce((acc: DirItem[], dir: DirItem) => {
+        if (!isPresent(acc, dir)) {
+            return [...acc, dir];
+        }
+        return acc;
+    }, explorer);
 
 			return updatedExplorer //replace explorer with updatedExplorer
 		case 'TOGGLE_EXPAND':
@@ -83,7 +73,7 @@ function reducer(explorer: DirItem[], action: ExplorerAction) {
 export function ExplorerProvider({ children }) {
 	const [explorer, dispatch] = useReducer(reducer, [])
 	
-	const values = {explorer, dispatch}
+	const values: ExplorerContextType = {explorer, dispatch}
 	return (
 		<ExplorerContext.Provider value={values}>
 			{children}
@@ -92,7 +82,7 @@ export function ExplorerProvider({ children }) {
 }
 
 //create a custom hook
-export function useExplorer() {
+export function useExplorer(): ExplorerContextType {
 	const context = useContext(ExplorerContext)
 	if (context === undefined) {
 		throw new Error ('useExplorer must be used within an ExplorerPorvider')

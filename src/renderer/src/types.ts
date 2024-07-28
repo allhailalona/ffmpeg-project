@@ -1,8 +1,10 @@
+import { Dispatch } from 'react';
+
 /// <reference types="vite/client" />
 
 export interface ExplorerContextType {
 	explorer: DirItem[]
-	dispatch: React.Dispatch<ExplorerAction>
+	dispatch: Dispatch<ExplorerAction>
 }
 
 export interface Metadata {
@@ -11,7 +13,7 @@ export interface Metadata {
 }
 export interface DirItem {
 	path: string
-	type?: 'file' | 'folder'
+	type?: 'file' | 'folder'//this here cannot be required since we recieve paths only from the various inputs
 	isExpanded?: boolean
 	metadata?: Metadata
 	subfolders?: DirItem[]

@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { DirItem } from '../types'
 import { useExplorer } from "@renderer/ctx/ExplorerContext"
 
@@ -19,7 +19,6 @@ export default function FileView(): JSX.Element {
 			
 			//update explorer
 			dispatch({type: 'TOGGLE_EXPAND', payload: {parentDir: dirToToggle, subfolders}})
-
 		} catch (err) {
 			console.error(err)
 		} finally {
@@ -36,9 +35,11 @@ export default function FileView(): JSX.Element {
 		try {
 			//since the output of e.dataTransfer.files is rather odd, we need to arrange it, so GET_DETAILS can read it
 			const droppedFiles = Array.from(e.dataTransfer.files).map(file => ({path: file.path}))
+			console.log('dropped files are', droppedFiles)
 		
 			//get res from electron API
 			const res = await window.electron.ipcRenderer.invoke('GET_DETAILS', droppedFiles)
+			console.log('detailed dropped files are', res)
 
 			//update explorer with dispatch
 			dispatch({type: 'ADD_DIRS', payload: {res}})
@@ -66,25 +67,41 @@ export default function FileView(): JSX.Element {
 		}
 	}
 
-	const renderDirTree = (dirToRender: DirItem[]) => {
-		return dirToRender.map(dir => {
-			if (dir.type === 'folder') {
-				return <div key={dir.path}>
-					<a onClick={() => toggleExpand(dir)}>{dir.isExpanded ? '^  ' : 'v  '}</a>
-					{dir.metadata?.name || dir.path}
-					{dir.isExpanded && dir.subfolders && (
-							<div style={{marginLeft: '10px'}}>{renderDirTree(dir.subfolders)}</div>
-            )}
-				</div>
-			} else if (dir.type === 'file') {
-				return <div key={dir.path}>
-					 {dir.metadata?.name || dir.path}
-				</div>
-			} 
-
-			return null
-		})
+	const renderDirTree = (dirsToRender: DirItem[]) => {
+		const folders = dirsToRender.filter(dir => dir.type === 'folder')
+		const files = dirsToRender.filter(dir => dir.type === 'file')
+		
+		return (
+			<table>
+				<thead>
+					<tr>
+						<th>Name</th>
+						<th>Size</th>
+					</tr>
+				</thead>
+				<tbody>
+						{folders.map(folder => (
+							<tr key={folder.path}>
+								<td>{folder.path}</td>
+							</tr>
+						))}
+					{files.map(file => (
+						<tr key={file.path}>
+							{/*although file.metadata will always exist, we have to check for it's existance to ts proof our code
+							we cannot  do it in types.ts since metadata does not exist before getDetails is done*/}
+							{file.metadata && Object.entries(file.metadata).map(([key, value]) => (
+								<td key={key}>{value !== undefined ? value : 'undefined'}</td>
+							))}
+						</tr>
+					))}
+				</tbody>
+			</table>
+		)
 	}
+
+	useEffect(() => {
+		console.log('file explorer was just updated to', explorer)
+	}, [explorer])
 
 	//make sure page contents are not loaded until async ops are done!
 	if (explorer.length === 0) {
