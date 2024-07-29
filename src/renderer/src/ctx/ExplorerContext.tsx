@@ -1,5 +1,5 @@
-import { createContext, useContext, useReducer} from "react";
-import { DirItem, ExplorerAction, ExplorerContextType } from '../types'
+import { createContext, useContext, useReducer, useState} from "react";
+import { DirItem, ExplorerAction, ExplorerContextType } from '../../../types'
 
 const ExplorerContext = createContext<ExplorerContextType | undefined>(undefined)
 
@@ -72,8 +72,9 @@ function reducer(explorer: DirItem[], action: ExplorerAction) {
 
 export function ExplorerProvider({ children }) {
 	const [explorer, dispatch] = useReducer(reducer, [])
+	const [viewParams, setViewParams] = useState(['title'])
 	
-	const values: ExplorerContextType = {explorer, dispatch}
+	const values: ExplorerContextType = {explorer, dispatch, viewParams, setViewParams}
 	return (
 		<ExplorerContext.Provider value={values}>
 			{children}

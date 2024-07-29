@@ -1,9 +1,10 @@
-import { ipcMain, dialog } from 'electron'
+import { ipcMain, dialog, IpcMainInvokeEvent } from 'electron'
 import fs from 'fs' //because we use promises, I forgot before
 import path from 'path'
-import iconv from 'iconv-lite'
-import jschardet from 'jschardet'
-import { DirItem } from '../renderer/src/types' //import the type interface so I can use it in handlers
+//import iconv from 'iconv-lite'
+//import jschardet from 'jschardet'
+import { DirItem } from '../types' //import the type interface so I can use it in handlers
+import { getItemDetails } from './utils'
 
 export default function setupIPC(): void {
   ipcMain.handle('GET_DETAILS', handleGetDetails)
@@ -11,19 +12,22 @@ export default function setupIPC(): void {
   ipcMain.handle('SELECT_DIR_DIALOG', handleSelectDirDialog)
 }
 
-async function handleGetDetails(event, dirsToDetail: DirItem[] | []) {
+async function handleGetDetails(_event: IpcMainInvokeEvent, dirsToDetail: DirItem[] | [], viewParams: string[]) {
 	return Promise.allSettled(dirsToDetail.map(dir => {
 		//console log here for debugging, this solution currently DOES NOT work
-		const detection = jschardet.detect(dir.path)
+		//notice how not only hebrew is problematic, node.js cannot process big centered dots as well
+		//const detection = jschardet.detect(dir.path)
 
-		const decodedPath = iconv.decode(Buffer.from(dir.path, 'binary'), detection.encoding)
+		//const decodedPath = iconv.decode(Buffer.from(dir.path, 'binary'), detection.encoding)
 
-		const decodedDir = {
-			...dir, 
-			path: decodedPath
-		}
+		//const decodedDir = {
+		//	...dir, 
+		//	path: decodedPath
+		//}
 
-		return getItemDetails(decodedDir)
+		//Pass viewParams here
+		console.log('hello from handleGetDetails, calling getItemDetails for mapped item', dir.path)
+		return getItemDetails(dir, viewParams)
 	}))
 	.then(results => {
 		const updatedDirsToDetail = results.map((result, index) => {
@@ -44,7 +48,7 @@ async function handleGetDetails(event, dirsToDetail: DirItem[] | []) {
 	})
 }
 
-async function handleToggleExpand (event, dirToToggle: DirItem): Promise<DirItem[]> {
+async function handleToggleExpand (_event: IpcMainInvokeEvent, dirToToggle: DirItem, viewParams: string[]): Promise<DirItem[] | DirItem | null> {
 	//dirToToggle must be passed as a whole to index.ts since we need to check the value of isExpanded
 	console.log(dirToToggle)
 	try {
@@ -57,7 +61,8 @@ async function handleToggleExpand (event, dirToToggle: DirItem): Promise<DirItem
 
 			//detail each path item, since we're inside try{} and not .then() we need to use await
 			const detailedExpandedDirToToggle = await Promise.allSettled(expandedDirToToggle.map(dir => {
-				return getItemDetails(dir)
+				//pass viewParams here
+				return getItemDetails(dir, viewParams)
 			})).then(results => results.map((result, index) => {
 					if (result.status === 'fulfilled') {
 						return {...expandedDirToToggle[index], ...result.value}
@@ -74,14 +79,16 @@ async function handleToggleExpand (event, dirToToggle: DirItem): Promise<DirItem
 			return detailedExpandedDirToToggle
 		} else {
 			console.log('dirToToggle is not expanded')
+			return dirToToggle
 		}
 	} catch (err) {
 		console.error(err)
+		return null
 		//don't forget to delete subfolders here!!!
 	}
 }
 
-async function handleSelectDirDialog(event, type: string) {
+async function handleSelectDirDialog(_event: IpcMainInvokeEvent, type: string) {
 	const res = await dialog.showOpenDialog({
 		properties: [type === 'folder' ? 'openDirectory' : 'openFile', 
 			'multiSelections'
@@ -95,34 +102,3 @@ async function handleSelectDirDialog(event, type: string) {
 	}
 }
 
-async function getItemDetails(dir: DirItem) {
-	console.log('items to detail are', dir)
-	try {
-		const stats = await fs.promises.stat(dir.path);
-	
-		//different stats for folders and for files (and for symlinks in the future)
-		if (stats.isDirectory()) {
-			return {
-				...dir,
-				type: 'folder',
-				isExpanded: false, 
-				metadata: {
-					name: path.basename(dir.path), //this is how we get the name of a folder
-					size: stats.size //improvements required - display sized of subcontents for folders and show mb/kb/gb etc
-				}
-			}
-		} else if (stats.isFile()) {
-			return {
-				...dir, 
-				type: 'file', 
-				metadata: {
-						name: path.basename(dir.path),
-						size: stats.size
-					}
-			}
-		}
-	} catch (err) {
-		console.error(`Couldn't detail ${dir.path}`);
-		return null //null will appear anyways, I'm gonna filter it in the expand functino above
-	}
-}

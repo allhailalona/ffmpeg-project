@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react"
-import { DirItem } from '../types'
+import { DirItem } from '../../../types'
 import { useExplorer } from "@renderer/ctx/ExplorerContext"
 
 export default function FileView(): JSX.Element {
-	const { explorer, dispatch } = useExplorer()
+	const { explorer, dispatch, viewParams } = useExplorer()
 	const [isLoading, setIsLoading] = useState(true)
 
 	const toggleExpand = async (dirToToggle: DirItem) => {
@@ -13,9 +13,8 @@ export default function FileView(): JSX.Element {
 			//toggle clickedDir
 			dispatch({type: 'TOGGLE_EXPAND', payload: {dirToToggle}})
 
-			//expand/collapse dir
-			//in the future u can pass the dir alone, which I presume will save CPU... 
-			const subfolders = await window.electron.ipcRenderer.invoke('TOGGLE_EXPAND', dirToToggle)
+			//Pass viewParams here
+			const subfolders = await window.electron.ipcRenderer.invoke('TOGGLE_EXPAND', dirToToggle, viewParams)
 			
 			//update explorer
 			dispatch({type: 'TOGGLE_EXPAND', payload: {parentDir: dirToToggle, subfolders}})
@@ -37,8 +36,8 @@ export default function FileView(): JSX.Element {
 			const droppedFiles = Array.from(e.dataTransfer.files).map(file => ({path: file.path}))
 			console.log('dropped files are', droppedFiles)
 		
-			//get res from electron API
-			const res = await window.electron.ipcRenderer.invoke('GET_DETAILS', droppedFiles)
+			//Pass viewParams here
+			const res = await window.electron.ipcRenderer.invoke('GET_DETAILS', droppedFiles, viewParams)
 			console.log('detailed dropped files are', res)
 
 			//update explorer with dispatch
@@ -56,8 +55,9 @@ export default function FileView(): JSX.Element {
 
 			const selectedFiles = await window.electron.ipcRenderer.invoke('SELECT_DIR_DIALOG', type)
 			const selectedFilesMod = selectedFiles.map(file => ({path: file}))
-			
-			const res = await window.electron.ipcRenderer.invoke('GET_DETAILS', selectedFilesMod)
+
+			//Pass viewParams here
+			const res = await window.electron.ipcRenderer.invoke('GET_DETAILS', selectedFilesMod, viewParams)
 			
 			dispatch({type: 'ADD_DIRS', payload: {res}})
 		} catch (err) {

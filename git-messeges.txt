@@ -1,12 +1,14 @@
-restructuring/4/bugfixes + basic columns view
-	failed to address the hebrew encoding issue: for now, hebrew paths cannot be processed
-	succesfully addressed the multiple files/folders loading bug by slighly adjusting the dispatch--
-	--functionality in context and the renderDirsTree function in FileView.tsx:
-	used a .reduce function instead of the const dir of action.payload.res, not really sure how it worked, neither I care
-	fix variety of ts issues
+restructuring/5 & viewParams/2 & overall tsproofing
 
-	ExplorerContext n types.ts: ts proofing
-	ipc.ts: attempts to address the hebrew issue
-	FileView.ts: table view feature
+	split electron main to utils.ts then move getDetails n ffmpeg functionality there
+	move types.ts to /src/ from /src/renderer
 
-	
+	fix HMR for electron-vite with electron-vite -w
+
+	ExplorerContext.tsx:
+		declare viewParams
+	FileView.tsx:
+		import viewParams and pass it to the necessary functions
+	ipc.ts:
+		implement viewParams in getItemDetails and call pass it to getMetadata
+
