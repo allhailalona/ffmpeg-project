@@ -4,7 +4,7 @@ import { ExplorerProvider } from './ctx/ExplorerContext'
 import './styles.css'
 
 ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
-    <ExplorerProvider>
-            <App />
-    </ExplorerProvider>
+  <ExplorerProvider>
+    <App />
+  </ExplorerProvider>
 )

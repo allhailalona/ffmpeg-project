@@ -11,9 +11,11 @@ export default function createWindow(): void {
     autoHideMenuBar: true,
     webPreferences: {
       preload: join(__dirname, '../preload/index.js'),
-      sandbox: false
+      sandbox: false,
+      additionalArguments: [
+        '--disable-features=AutofillServerCommunication,AutofillEnableRealPanUi'
+      ]
     }
-
   })
 
   //open dev pane by default when on dev mode

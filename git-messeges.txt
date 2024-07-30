@@ -1,6 +1,15 @@
-viewParams/3 & minor restructuring
-	create ContextMenu and so implementing the basic ContextMenu functionality
-	create a hooks folder then include hook from useExplorer and the new useContextMenu hook
-	create reusable actions in ContextMenu
+address various bugfixes and styling issues:
+	overflow tables and make sure the table takes w-full etc with backgrounds
+	introduce eslint and prettier with electron toolkit and fix entire project
+	ts proof entire project
 
-		
+	fix the Chrome Devtools error which haunts me for dozens of commits
+
+	using eslint and prettier with electron-vite:
+		there are several configs which are imported automatically when initalizing electron-vite, those are written in the legacy version of eslint configs.
+		I couldn't find a way to access those pacakages with the new format, which is why I DON'T use those extensions. I will however, include the prettier plugin.
+
+		note this is NOT about using ESM/CommonJS, this about the config format chosen for elint, which can be setup with either ESM/CommonJS
+
+		https://github.com/alex8088/electron-toolkit
+		https://eslint.org/docs/latest/use/troubleshooting/couldnt-find-the-config
