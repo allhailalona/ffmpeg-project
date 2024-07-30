@@ -1,10 +1,20 @@
-import { useEffect, useState } from "react"
+import { useEffect, useState, Fragment } from "react"
 import { DirItem } from '../../../types'
-import { useExplorer } from "@renderer/ctx/ExplorerContext"
+import ContextMenu from "./ContextMenu"
+import useExplorer from '../hooks/useExplorer'
+import useContextMenu from '../hooks/useContextMenu'
 
 export default function FileView(): JSX.Element {
 	const { explorer, dispatch, viewParams } = useExplorer()
 	const [isLoading, setIsLoading] = useState(true)
+
+	const { contextMenuProps, showContextMenu } = useContextMenu()
+
+	const items = {
+		cut: () => console.log('cut clicked'), 
+		copy: 'copy', 
+		paste: 'paste'
+	}
 
 	const toggleExpand = async (dirToToggle: DirItem) => {
 		try {
@@ -71,29 +81,48 @@ export default function FileView(): JSX.Element {
 		const folders = dirsToRender.filter(dir => dir.type === 'folder')
 		const files = dirsToRender.filter(dir => dir.type === 'file')
 		
+		const renderFolders = (folder: DirItem, depth: number = 0) => {
+  return (
+    <Fragment key={folder.path}>
+      <tr className="w-full border border-black">
+        <td style={{ paddingLeft: `${depth * 20}px`}}>
+          {/* You can use an icon here to indicate folder state */}
+          <span onClick={() => toggleExpand(folder)}>{folder.isExpanded ? '▼' : '▶'}</span>
+          <span onDoubleClick={() => toggleExpand(folder)}>{folder.path}</span>
+        </td>
+      </tr>
+      {folder.isExpanded && folder.subfolders && folder.subfolders.map(subfolder => (
+        renderFolders(subfolder, depth + 1)
+      ))}
+    </Fragment>
+  )
+}
+
+		const renderFiles = (file: DirItem) => {
+			return (
+				<tr key={file.path} className="w-full">
+					{/*although file.metadata will always exist, we have to check for it's existance to ts proof our code
+					we cannot  do it in types.ts since metadata does not exist before getDetails is done*/}
+					{file.metadata && Object.entries(file.metadata).map(([key, value]) => (
+						<td key={key}>{value !== undefined && value !== null ? value.toString() : 'undefined'}</td>
+					))}
+				</tr>
+			)
+		}
+
 		return (
-			<table>
-				<thead>
-					<tr>
-						<th>Name</th>
-						<th>Size</th>
+			<table className="w-full"> 
+				{contextMenuProps.isVisible && <ContextMenu items={items} x={contextMenuProps.x} y={contextMenuProps.y}/>}
+				<thead className="w-full border-2 border-green-300">
+					<tr key={'headers'} onContextMenu={showContextMenu} className="w-full">
+						{viewParams.map(param => (
+							<th key={param}>{param}</th>
+						))}
 					</tr>
 				</thead>
-				<tbody>
-						{folders.map(folder => (
-							<tr key={folder.path}>
-								<td>{folder.path}</td>
-							</tr>
-						))}
-					{files.map(file => (
-						<tr key={file.path}>
-							{/*although file.metadata will always exist, we have to check for it's existance to ts proof our code
-							we cannot  do it in types.ts since metadata does not exist before getDetails is done*/}
-							{file.metadata && Object.entries(file.metadata).map(([key, value]) => (
-								<td key={key}>{value !== undefined ? value : 'undefined'}</td>
-							))}
-						</tr>
-					))}
+				<tbody className="w-full bg-green-300 overflow-y-auto">
+					{folders.map(renderFolders)}
+					{files.map(renderFiles)}
 				</tbody>
 			</table>
 		)

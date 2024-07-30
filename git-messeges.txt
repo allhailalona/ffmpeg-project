@@ -1,14 +1,6 @@
-restructuring/5 & viewParams/2 & overall tsproofing
+viewParams/3 & minor restructuring
+	create ContextMenu and so implementing the basic ContextMenu functionality
+	create a hooks folder then include hook from useExplorer and the new useContextMenu hook
+	create reusable actions in ContextMenu
 
-	split electron main to utils.ts then move getDetails n ffmpeg functionality there
-	move types.ts to /src/ from /src/renderer
-
-	fix HMR for electron-vite with electron-vite -w
-
-	ExplorerContext.tsx:
-		declare viewParams
-	FileView.tsx:
-		import viewParams and pass it to the necessary functions
-	ipc.ts:
-		implement viewParams in getItemDetails and call pass it to getMetadata
-
+		

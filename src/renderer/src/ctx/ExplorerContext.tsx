@@ -1,7 +1,7 @@
-import { createContext, useContext, useReducer, useState} from "react";
+import { createContext, useReducer, useState} from "react";
 import { DirItem, ExplorerAction, ExplorerContextType } from '../../../types'
 
-const ExplorerContext = createContext<ExplorerContextType | undefined>(undefined)
+export const ExplorerContext = createContext<ExplorerContextType | undefined>(undefined)
 
 function updateExplorerRecursively(dirs: DirItem[], parentDir: DirItem, subfolders?: DirItem[]): DirItem[] {
 	return dirs.map(dir => {
@@ -53,7 +53,7 @@ function reducer(explorer: DirItem[], action: ExplorerAction) {
             return [...acc, dir];
         }
         return acc;
-    }, explorer);
+    	}, explorer);
 
 			return updatedExplorer //replace explorer with updatedExplorer
 		case 'TOGGLE_EXPAND':
@@ -72,7 +72,7 @@ function reducer(explorer: DirItem[], action: ExplorerAction) {
 
 export function ExplorerProvider({ children }) {
 	const [explorer, dispatch] = useReducer(reducer, [])
-	const [viewParams, setViewParams] = useState(['title'])
+	const [viewParams, setViewParams] = useState(['title', 'name', 'size'])
 	
 	const values: ExplorerContextType = {explorer, dispatch, viewParams, setViewParams}
 	return (
@@ -80,14 +80,4 @@ export function ExplorerProvider({ children }) {
 			{children}
 		</ExplorerContext.Provider>
 	)
-}
-
-//create a custom hook
-export function useExplorer(): ExplorerContextType {
-	const context = useContext(ExplorerContext)
-	if (context === undefined) {
-		throw new Error ('useExplorer must be used within an ExplorerPorvider')
-	} else {
-		return context
-	}
 }

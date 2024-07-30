@@ -15,10 +15,12 @@ export async function getItemDetails(dir: DirItem, viewParams: string[]) {
                 isExpanded: false, 
             }
         } else if (stats.isFile()) {
+
             console.log('file detected')
             console.log('calling getMetadata')
             const metadata = await handleGetMetadata(dir, stats, viewParams)
             console.log('metadata is', metadata)
+
             return {
                 ...dir, 
                 type: 'file', 
@@ -36,19 +38,23 @@ export async function getItemDetails(dir: DirItem, viewParams: string[]) {
 
 async function handleGetMetadata(dir: DirItem, stats: fs.Stats, viewParams: string[]): Promise<Record<string, string | number> | null> {
     try {
+        console.log('hello from handleGetMetadata recieved', dir)
+        console.log('viewParams are', viewParams)
         const metadata: Record<string, string | number> = {}
 
+        console.log('about to enter loop')
         for (const param of viewParams) {
             switch(param) {
                 case 'name':
-                    metadata.name = path.basename(dir.path)
+                    metadata.name = path.basename(dir.path) || 'No name found'
                     break
                 case 'title':
+                    console.log('detected title required')
                     const res = await getMetadata(dir.path)
-                    metadata.title = res.format?.tags?.title || 'No title'
+                    metadata.title = res.format?.tags?.title || 'No title found'
                     break
                 case 'size':
-                    metadata.size = stats.size
+                    metadata.size = stats.size || 'No size found'
                     break
             }
         }
