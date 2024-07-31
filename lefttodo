@@ -1,7 +1,9 @@
-		indent code the same 
+		finish contextMenu implementation
 		filter input for media files only
-		copy indenetation perfectly
-		
 		allotement for cols and dnd
-		remove this annoying window on several occasions
-		ts proof everything
+		sort data
+
+		vscode issues:
+			remove this annoying window on several occasions
+			copy indenetation perfectly
+			interactive eslinter and prettier

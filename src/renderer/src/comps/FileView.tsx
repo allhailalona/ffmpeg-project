@@ -1,4 +1,4 @@
-import { useEffect, useState, Fragment } from 'react'
+import { useState, Fragment } from 'react'
 import { DirItem } from '../../../types'
 import ContextMenu from './ContextMenu'
 import useExplorer from '../hooks/useExplorer'
@@ -8,13 +8,7 @@ export default function FileView(): JSX.Element {
   const [isLoading, setIsLoading] = useState(true)
 
   const { explorer, dispatch, viewParams } = useExplorer()
-  console.log('welcome to FileView.ts, explorer is', explorer)
-  
   const { contextMenuProps, showContextMenu } = useContextMenu()
-
-  const items = {
-    cut: (): void /*for now!*/ => console.log('cut clicked')
-  }
 
   const toggleExpand = async (dirToToggle: DirItem): Promise<void> => {
     try {
@@ -152,10 +146,6 @@ export default function FileView(): JSX.Element {
     )
   }
 
-  useEffect(() => {
-    console.log('file explorer was just updated to', explorer)
-  }, [explorer])
-
   //make sure page contents are not loaded until async ops are done!
   if (explorer.length === 0) {
     return (
@@ -186,7 +176,7 @@ export default function FileView(): JSX.Element {
         className="w-full h-[90%] bg-red-500 p-4 border-4 border-white"
       >
         {contextMenuProps.isVisible && (
-          <ContextMenu items={items} x={contextMenuProps.x} y={contextMenuProps.y} />
+          <ContextMenu x={contextMenuProps.x} y={contextMenuProps.y} />
         )}
         {renderDirTree(explorer)}
       </div>

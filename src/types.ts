@@ -39,14 +39,5 @@ export interface UseContextMenuReturn {
   contextMenuProps: ContextMenuProps
   showContextMenu: (e: React.MouseEvent) => void
   hideContextMenu: () => void
-}
-
-export interface ContextMenuCompProps {
-  //we use the Record to annotate object types ([key, value),--
-  //--in this case the menu lable is a string, and the value is a function
-  //void is used where the function won't return any value, like console.log in fucntion. in future--
-  //--commits, the items' action will use window.electron.ipcInvoke so we'll need to change the return type
-  items: Record<string, () => void>
-  x: number
-  y: number
+  options: Record<string, () => void>
 }

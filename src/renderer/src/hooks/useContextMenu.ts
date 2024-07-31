@@ -7,9 +7,36 @@
 //--menu after click and whatnot....)
 
 import { useState, useEffect, useCallback } from 'react'
+import useExplorer from './useExplorer'
 import { UseContextMenuReturn, ContextMenuProps } from 'src/types'
 
 export default function useContextMenu(): UseContextMenuReturn {
+  const { setViewParams } = useExplorer()
+
+  //checks if the value exists in state, if it does and there is only one value,--
+  //--it won't do nothing, otherwise, it will add/remove value from state
+  const modViewParams = (clickedOption: string): void => {
+    console.log('hello from modViewParams')
+    setViewParams((prev) => {
+      if (prev.includes(clickedOption)) {
+        if (prev.length > 1) {
+          console.log('trying to remove value')
+          return prev.filter((param) => param !== clickedOption)
+        }
+        return prev
+      } else {
+        console.log('trying to add value')
+        return [...prev, clickedOption]
+      }
+    })
+  }
+
+  const options = {
+    name: (): void => modViewParams('name'),
+    title: (): void => modViewParams('title'),
+    size: (): void => modViewParams('size')
+  }
+
   const [contextMenuProps, setContextMenuProps] = useState<ContextMenuProps>({
     isVisible: false,
     x: 0,
@@ -18,7 +45,6 @@ export default function useContextMenu(): UseContextMenuReturn {
 
   const showContextMenu = useCallback((e: React.MouseEvent) => {
     e.preventDefault()
-    console.log('hello from showContextMenu, x is', e.clientX, 'and y is', e.clientY)
 
     setContextMenuProps({
       isVisible: true,
@@ -45,5 +71,5 @@ export default function useContextMenu(): UseContextMenuReturn {
     }
   }, [contextMenuProps.isVisible, hideContextMenu])
 
-  return { contextMenuProps, showContextMenu, hideContextMenu }
+  return { contextMenuProps, showContextMenu, hideContextMenu, options }
 }

@@ -77,7 +77,7 @@ function reducer(explorer: DirItem[], action: ExplorerAction): DirItem[] {
         )
         return result
       }
-      //eslint might want to add a break here, but break does some issues... we should always return something from the reducer to avoid having null
+    //eslint might want to add a break here, but break does some issues... we should always return something from the reducer to avoid having null
     default:
       return explorer
   }
@@ -85,7 +85,7 @@ function reducer(explorer: DirItem[], action: ExplorerAction): DirItem[] {
 
 export function ExplorerProvider({ children }: { children: ReactNode }): JSX.Element {
   const [explorer, dispatch] = useReducer(reducer, [])
-  const [viewParams, setViewParams] = useState(['title', 'name', 'size'])
+  const [viewParams, setViewParams] = useState(['name', 'title', 'size'])
 
   const values: ExplorerContextType = {
     explorer,
