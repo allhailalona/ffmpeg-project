@@ -85,7 +85,7 @@ function reducer(explorer: DirItem[], action: ExplorerAction): DirItem[] {
 
 export function ExplorerProvider({ children }: { children: ReactNode }): JSX.Element {
   const [explorer, dispatch] = useReducer(reducer, [])
-  const [viewParams, setViewParams] = useState(['name', 'title', 'size'])
+  const [viewParams, setViewParams] = useState(['name', 'size'])
 
   const values: ExplorerContextType = {
     explorer,
