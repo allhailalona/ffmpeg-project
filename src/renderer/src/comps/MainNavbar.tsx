@@ -6,18 +6,18 @@ export default function MainNavbar(): JSX.Element {
 
   const handleDirSelect = async () => {
     try {
-      const result = await window.electron.ipcRenderer.invoke('BROWSE_OUTPUT_DIR');
+      const result = await window.electron.ipcRenderer.invoke('BROWSE_OUTPUT_DIR')
       if (!result.canceled && result.filePaths.length > 0) {
-        setOutputDir(result.filePaths[0]);
+        setOutputDir(result.filePaths[0])
       }
     } catch (error) {
-      console.error('Error selecting directory:', error);
+      console.error('Error selecting directory:', error)
     }
-  };
+  }
 
   const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setOutputDir(event.target.value);
-  };
+    setOutputDir(event.target.value)
+  }
 
   return (
     <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
@@ -32,6 +32,5 @@ export default function MainNavbar(): JSX.Element {
         Browse
       </Button>
     </Box>
-  );
+  )
 }
-

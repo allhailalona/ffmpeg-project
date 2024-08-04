@@ -5,7 +5,6 @@ import useExplorer from '../hooks/useExplorer'
 import useContextMenu from '../hooks/useContextMenu'
 
 export default function FileView(): JSX.Element {
-
   const { explorer, dispatch, viewParams } = useExplorer()
   const { contextMenuProps, showContextMenu } = useContextMenu()
 
@@ -74,68 +73,70 @@ export default function FileView(): JSX.Element {
   }
 
   const renderDirTree = (dirsToRender: DirItem[]): JSX.Element => {
-  const renderFolders = (folder: DirItem, depth: number = 0): JSX.Element => {
-    return (
-      <Fragment key={folder.path}>
-        <tr className="w-full">
-          <td
-            colSpan={viewParams.length}
-            className="border-2 border-black"
-            style={{ paddingLeft: `${depth * 8}px` }}
-          >
-            <span onClick={() => toggleExpand(folder)}>{folder.isExpanded ? '▼' : '▶'}</span>
-            <span onDoubleClick={() => toggleExpand(folder)}>{folder.path}</span>
-          </td>
-        </tr>
-        {folder.subfolders &&
-          folder.isExpanded &&
-          folder.subfolders.map((subDir) =>
-            subDir.type === 'folder' ? renderFolders(subDir, depth + 1) : renderFiles(subDir, depth + 1)
-          )}
-      </Fragment>
-    )
-  }
-
-  const renderFiles = (file: DirItem, depth: number = 0): JSX.Element => {
-    return (
-      <tr key={file.path} className="bg-green-300">
-        {file.metadata &&
-          Object.entries(file.metadata).map(([key, value], index) => (
-            <td 
-              key={key} 
+    const renderFolders = (folder: DirItem, depth: number = 0): JSX.Element => {
+      return (
+        <Fragment key={folder.path}>
+          <tr className="w-full">
+            <td
+              colSpan={viewParams.length}
               className="border-2 border-black"
-              style={{ paddingLeft: index === 0 ? `${depth * 8}px` : '0' }}
+              style={{ paddingLeft: `${depth * 8}px` }}
             >
-              {value !== undefined && value !== null ? value.toString() : 'undefined'}
+              <span onClick={() => toggleExpand(folder)}>{folder.isExpanded ? '▼' : '▶'}</span>
+              <span onDoubleClick={() => toggleExpand(folder)}>{folder.path}</span>
             </td>
-          ))}
-      </tr>
+          </tr>
+          {folder.subfolders &&
+            folder.isExpanded &&
+            folder.subfolders.map((subDir) =>
+              subDir.type === 'folder'
+                ? renderFolders(subDir, depth + 1)
+                : renderFiles(subDir, depth + 1)
+            )}
+        </Fragment>
+      )
+    }
+
+    const renderFiles = (file: DirItem, depth: number = 0): JSX.Element => {
+      return (
+        <tr key={file.path} className="bg-green-300">
+          {file.metadata &&
+            Object.entries(file.metadata).map(([key, value], index) => (
+              <td
+                key={key}
+                className="border-2 border-black"
+                style={{ paddingLeft: index === 0 ? `${depth * 8}px` : '0' }}
+              >
+                {value !== undefined && value !== null ? value.toString() : 'undefined'}
+              </td>
+            ))}
+        </tr>
+      )
+    }
+
+    const folders = dirsToRender.filter((dir) => dir.type === 'folder')
+    const files = dirsToRender.filter((dir) => dir.type === 'file')
+
+    return (
+      <div className="w-full h-full overflow-y-auto">
+        <table className="w-full">
+          <thead className="sticky top-0 bg-red-300 z-10">
+            <tr onContextMenu={showContextMenu} className="w-full">
+              {viewParams.map((param) => (
+                <th key={param} className="w-[50%] border border-black px-4 py-2">
+                  {param}
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody className="bg-zinc-300">
+            {folders.map((folder) => renderFolders(folder))}
+            {files.map((file) => renderFiles(file))}
+          </tbody>
+        </table>
+      </div>
     )
   }
-
-  const folders = dirsToRender.filter((dir) => dir.type === 'folder')
-  const files = dirsToRender.filter((dir) => dir.type === 'file')
-
-  return (
-    <div className="w-full h-full overflow-y-auto">
-      <table className="w-full">
-        <thead className="sticky top-0 bg-red-300 z-10">
-          <tr onContextMenu={showContextMenu} className="w-full">
-            {viewParams.map((param) => (
-              <th key={param} className="w-[50%] border border-black px-4 py-2">
-                {param}
-              </th>
-            ))}
-          </tr>
-        </thead>
-        <tbody className="bg-zinc-300">
-          {folders.map((folder) => renderFolders(folder))}
-          {files.map((file) => renderFiles(file))}
-        </tbody>
-      </table>
-    </div>
-  )
-}
 
   //make sure page contents are not loaded until async ops are done!
   if (explorer.length === 0) {

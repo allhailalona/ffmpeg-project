@@ -1,4 +1,4 @@
-import { useReducer } from "react"
+import { useReducer } from 'react'
 import { Select, MenuItem, FormControl, InputLabel, Button } from '@mui/material'
 
 const initialState = {
@@ -8,21 +8,21 @@ const initialState = {
 }
 
 function reducer(state, action) {
-  switch(action.type) {
+  switch (action.type) {
     case 'SET_DROPDOWN':
       return { ...state, [action.payload.name]: action.payload.value }
     default:
       return state
-  } 
+  }
 }
 
-const selectStyle = { 
+const selectStyle = {
   minWidth: 200,
   '.MuiSelect-select': {
     display: 'flex',
     alignItems: 'center'
   }
-};
+}
 
 export default function ActionPane(): JSX.Element {
   const [state, dispatch] = useReducer(reducer, initialState)
@@ -30,19 +30,15 @@ export default function ActionPane(): JSX.Element {
   const handleSelectChange = (e) => {
     dispatch({
       type: 'SET_DROPDOWN',
-      payload: {name: e.target.name, value: e.target.value}
+      payload: { name: e.target.name, value: e.target.value }
     })
   }
 
-  const handleConvertClick = () => {
+  const handleConvertClick = () => {}
 
-  }
-  
   return (
     <div className="w-full flex flex-row items-center bg-zinc-200">
-      <div className="w-[10%] flex items-center">
-        Output Format:
-      </div>
+      <div className="w-[10%] flex items-center">Output Format:</div>
       <div className="w-[80%] flex justify-around items-center">
         <FormControl margin="normal">
           <InputLabel>Audio output format:</InputLabel>
@@ -87,9 +83,10 @@ export default function ActionPane(): JSX.Element {
         </FormControl>
       </div>
       <div className="flex items-center justify-right">
-        <Button onClick={handleConvertClick} variant="contained" size="large">Convert!</Button>
+        <Button onClick={handleConvertClick} variant="contained" size="large">
+          Convert!
+        </Button>
       </div>
     </div>
-    
-  );
+  )
 }

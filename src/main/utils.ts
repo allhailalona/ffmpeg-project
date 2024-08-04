@@ -56,7 +56,6 @@ export async function getItemDetails(dir: DirItem, viewParams: string[]): Promis
           subfolders: validSubDirs
         }
       } else {
-        console.log('folder without media, skipping')
         return null
       }
     } else if (stats.isFile() && isMediaFile(dir.path)) {
@@ -70,7 +69,6 @@ export async function getItemDetails(dir: DirItem, viewParams: string[]): Promis
         metadata: metadata
       }
     } else {
-      console.log('not a folder or media file, skipping')
       return null
     }
   } catch (err) {
