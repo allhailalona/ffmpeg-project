@@ -1,5 +1,6 @@
 import { useReducer } from 'react'
 import { Select, MenuItem, FormControl, InputLabel, Button } from '@mui/material'
+import useExplorer from '@renderer/hooks/useExplorer'
 
 const initialState = {
   convertedAudioFormat: '',
@@ -24,8 +25,10 @@ const selectStyle = {
   }
 }
 
-export default function ActionPane(): JSX.Element {
+export default function ActionPane({ outputDir }): JSX.Element {
   const [state, dispatch] = useReducer(reducer, initialState)
+
+  const { explorer } = useExplorer()
 
   const handleSelectChange = (e) => {
     dispatch({
@@ -34,14 +37,27 @@ export default function ActionPane(): JSX.Element {
     })
   }
 
-  const handleConvertClick = () => {}
+  const handleConvertClick = async () => {
+    try {
+      const res = await window.electron.ipcRenderer.invoke('CONVERT_EXPLORER', {
+          explorer, 
+          convertedAudioFormat: state.convertedAudioFormat, 
+          convertedVideoFormat: state.convertedVideoFormat, 
+          convertedImageFormat: state.convertedImageFormat,
+          outputDir
+        }
+      )
+    } catch (err) {
+      console.error('Error in handleConvertClick', err)
+    }
+  }
 
   return (
     <div className="w-full flex flex-row items-center bg-zinc-200">
       <div className="w-[10%] flex items-center">Output Format:</div>
       <div className="w-[80%] flex justify-around items-center">
         <FormControl margin="normal">
-          <InputLabel>Audio output format:</InputLabel>
+          <InputLabel>Audio output Codec:</InputLabel>
           <Select
             name="convertedAudioFormat"
             value={state.convertedAudioFormat}
@@ -51,11 +67,12 @@ export default function ActionPane(): JSX.Element {
           >
             <MenuItem value="opus">opus</MenuItem>
             <MenuItem value="mp3">mp3</MenuItem>
+            <MenuItem value="AAC">AAC</MenuItem>
           </Select>
         </FormControl>
 
         <FormControl margin="normal">
-          <InputLabel>Video Output Format:</InputLabel>
+          <InputLabel>Video Output Codec:</InputLabel>
           <Select
             name="convertedVideoFormat"
             value={state.convertedVideoFormat}
@@ -63,13 +80,14 @@ export default function ActionPane(): JSX.Element {
             label="convertedVideoFormat"
             sx={selectStyle}
           >
-            <MenuItem value="av1">av1</MenuItem>
-            <MenuItem value="mp4">mp4</MenuItem>
+            <MenuItem value="AV1">AV1</MenuItem>
+            <MenuItem value="VP9">VP9</MenuItem>
+            <MenuItem value="H265">H265</MenuItem>
           </Select>
         </FormControl>
 
         <FormControl margin="normal">
-          <InputLabel>Image output format:</InputLabel>
+          <InputLabel>Image output Codec:</InputLabel>
           <Select
             name="convertedImageFormat"
             value={state.convertedImageFormat}
@@ -77,8 +95,8 @@ export default function ActionPane(): JSX.Element {
             label="convertedImageFormat"
             sx={selectStyle}
           >
-            <MenuItem value="av1">av1</MenuItem>
-            <MenuItem value="mp4">png</MenuItem>
+            <MenuItem value="AVIF">AVIF</MenuItem>
+            <MenuItem value="JXL">JPEG XL</MenuItem>
           </Select>
         </FormControl>
       </div>

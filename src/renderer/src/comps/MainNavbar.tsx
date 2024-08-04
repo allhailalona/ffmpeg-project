@@ -1,9 +1,6 @@
-import { useState } from 'react'
 import { TextField, Button, Box } from '@mui/material'
 
-export default function MainNavbar(): JSX.Element {
-  const [outputDir, setOutputDir] = useState('')
-
+export default function MainNavbar({ outputDir, setOutputDir }): JSX.Element {
   const handleDirSelect = async () => {
     try {
       const result = await window.electron.ipcRenderer.invoke('BROWSE_OUTPUT_DIR')
