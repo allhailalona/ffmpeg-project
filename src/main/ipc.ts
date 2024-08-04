@@ -10,6 +10,7 @@ export default function setupIPC(): void {
   ipcMain.handle('GET_DETAILS', handleGetDetails)
   ipcMain.handle('TOGGLE_EXPAND', handleToggleExpand)
   ipcMain.handle('SELECT_DIR_DIALOG', handleSelectDirDialog)
+  ipcMain.handle('BROWSE_OUTPUT_DIR', browseOutputDir)
 }
 
 async function handleGetDetails(
@@ -115,4 +116,11 @@ async function handleSelectDirDialog(_event: IpcMainInvokeEvent, type: string): 
   } else {
     return res.filePaths
   }
+}
+
+async function browseOutputDir() {
+  const result = await dialog.showOpenDialog({
+    properties: ['openDirectory']
+  })
+  return result
 }
