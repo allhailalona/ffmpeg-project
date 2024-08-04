@@ -1,22 +1,18 @@
 import fs from 'fs'
 import path from 'path'
 import ffmpeg from 'fluent-ffmpeg'
+import { dialog } from 'electron'
 import { DirItem } from '../types'
 
-async function folderContainsMedia(folderPath: string): Promise<boolean> {
-  const items = await fs.promises.readdir(folderPath)
-  for (const item of items) {
-    const itemPath = path.join(folderPath, item)
-    const stats = await fs.promises.stat(itemPath)
-    if (stats.isFile() && isMediaFile(itemPath)) {
-      return true
-    } else if (stats.isDirectory()) {
-      if (await folderContainsMedia(itemPath)) {
-        return true
-      }
-    }
+export async function convertExplorer(dirToConvert: DirItem, codecPrefs: string[], outputDir) {
+  try {
+    console.log('hello from convertExplorer')
+    console.log('dirToConvert is', dirToConvert)
+    console.log('codecPrefs are', codecPrefs)
+    console.log('outputDir is', outputDir)
+  } catch (err) {
+    console.error('Error in convertExplorer function!', err)
   }
-  return false
 }
 
 function isMediaFile(filePath: string): boolean {
@@ -106,14 +102,9 @@ async function handleGetMetadata(
   }
 }
 
-function getMetadata(targetPath: string): Promise<ffmpeg.FfprobeData> {
-  return new Promise((resolve, reject) => {
-    ffmpeg.ffprobe(targetPath, (err, metadata) => {
-      if (err) {
-        reject(err)
-      } else {
-        resolve(metadata)
-      }
-    })
+export async function browseOutputDir() {
+  const result = await dialog.showOpenDialog({
+    properties: ['openDirectory']
   })
+  return result
 }
