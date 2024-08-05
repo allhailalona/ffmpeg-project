@@ -4,12 +4,37 @@ import ffmpeg from 'fluent-ffmpeg'
 import { dialog } from 'electron'
 import { DirItem } from '../types'
 
-export async function convertExplorer(dirToConvert: DirItem, codecPrefs: string[], outputDir) {
+export async function convertExplorer(
+  dirToConvert: DirItem[],
+  codecPrefs: string[],
+  outputDir: string
+) {
   try {
-    console.log('hello from convertExplorer')
-    console.log('dirToConvert is', dirToConvert)
-    console.log('codecPrefs are', codecPrefs)
-    console.log('outputDir is', outputDir)
+    console.log('hello from convertExplorer, outputDir is', outputDir)
+    fs.mkdirSync(path.join(outputDir, 'covnerted'), {recursive: true})
+
+    const convertTo = async (items: DirItem[], currentOutputDir: string) => {
+      await Promise.allSettled(
+        items.map(async (item) => {
+          if (item.type === 'folder' && item.subfolders) {
+            const newOutputDir = path.join(currentOutputDir, item.metadata.name)
+            //recursive true is an advanced version of recursive false for nested dirs structures:
+              //If the directory already exists, it does nothing (no error is thrown).
+              //If the directory doesn't exist, it creates it.
+              //If any parent directories in the path don't exist, it creates those too.
+            //fs.promises.mkdir is for asynced ops, while fs.mkdirSync is for synced ones
+            fs.promises.mkdir(newOutputDir, { recursive: true })
+            console.log(`New path to iterate is ${newOutputDir}`)
+            await convertTo(item.subfolders, newOutputDir)
+          } else if (item.type === 'file') {
+            console.log('File detected, converting now!')
+            // Add your file conversion logic here
+          }
+        })
+      )
+    }
+
+    await convertTo(dirToConvert, path.join(outputDir, 'covnerted'))
   } catch (err) {
     console.error('Error in convertExplorer function!', err)
   }
@@ -35,6 +60,7 @@ function isMediaFile(filePath: string): boolean {
 export async function getItemDetails(dir: DirItem, viewParams: string[]): Promise<DirItem | null> {
   try {
     const stats = await fs.promises.stat(dir.path)
+    const metadata = await handleGetMetadata(dir, stats, viewParams)
 
     if (stats.isDirectory()) {
       const subItems = await fs.promises.readdir(dir.path)
@@ -49,6 +75,7 @@ export async function getItemDetails(dir: DirItem, viewParams: string[]): Promis
           ...dir,
           type: 'folder',
           isExpanded: true,
+          metadata: metadata,
           subfolders: validSubDirs
         }
       } else {
@@ -56,8 +83,6 @@ export async function getItemDetails(dir: DirItem, viewParams: string[]): Promis
       }
     } else if (stats.isFile() && isMediaFile(dir.path)) {
       console.log('media file detected')
-      const metadata = await handleGetMetadata(dir, stats, viewParams)
-      console.log('metadata is', metadata)
 
       return {
         ...dir,

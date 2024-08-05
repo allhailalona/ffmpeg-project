@@ -1,8 +1,8 @@
 		finish contextMenu implementation
-		filter input for media files only
 		clear explorer
 		expand/collapse all
 		convert and MAINTAIN directory structure
+		electron security fix
 
 		vscode issues:
 			remove this annoying window on several occasions
