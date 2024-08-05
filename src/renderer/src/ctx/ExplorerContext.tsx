@@ -30,7 +30,7 @@ function updateExplorerRecursively(
 }
 
 //the state is managed automatically and there is no need to explicitly pass it to the function
-function reducer(explorer: DirItem[], action: ExplorerAction): DirItem[] {
+function reducer(explorer: DirItem[], action: ExplorerAction): DirItem[] | string | undefined {
   switch (action.type) {
     case 'ADD_DIRS': {
       //convert recieved array back to an object so we can properly add it to the explorer
@@ -77,6 +77,9 @@ function reducer(explorer: DirItem[], action: ExplorerAction): DirItem[] {
         )
         return result
       }
+      break
+    case 'CLEAR_ALL':
+      return ''
     //eslint might want to add a break here, but break does some issues... we should always return something from the reducer to avoid having null
     default:
       return explorer

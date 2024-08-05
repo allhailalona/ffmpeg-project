@@ -11,11 +11,13 @@ function isMediaFile(filePath: string): boolean {
     '.wav',
     '.ogg',
     '.flac',
+    '.opus',
     '.mp4',
     '.avi',
     '.mov',
     '.jpg',
     '.jpeg',
+    '.jxl',
     '.png',
     '.gif',
     '.bmp'
@@ -93,9 +95,10 @@ async function handleGetMetadata(
   }
 }
 
-export async function browseOutputDir(): Promise<string> {
+export async function browseOutputDir(): Promise<object> {
   const result = await dialog.showOpenDialog({
     properties: ['openDirectory']
   })
+  console.log(result)
   return result
 }

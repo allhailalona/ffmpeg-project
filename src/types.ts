@@ -3,18 +3,10 @@ import { Dispatch, SetStateAction } from 'react'
 /// <reference types="vite/client" />
 
 export interface ExplorerContextType {
-  explorer: DirItem[]
+  explorer: DirItem[] | string
   dispatch: Dispatch<ExplorerAction>
   viewParams: string[] //for now!
   setViewParams: (value: SetStateAction<string[]>) => void
-}
-
-export interface DirItem {
-  path: string
-  type?: string //this here cannot be required since we recieve paths only from the various inputs
-  isExpanded?: boolean
-  metadata?: object
-  subfolders?: DirItem[]
 }
 
 export type ExplorerAction =
@@ -27,6 +19,15 @@ export type ExplorerAction =
         subfolders?: DirItem[]
       }
     }
+  | { type: 'CLEAR_ALL'; payload: undefined }
+
+export interface DirItem {
+  path: string
+  type?: string //this here cannot be required since we recieve paths only from the various inputs
+  isExpanded?: boolean
+  metadata?: object | null
+  subfolders?: DirItem[]
+}
 
 //////////////////////////////////////////ContextMenu types///////////////////////////////////////////////
 export interface ContextMenuProps {
@@ -53,7 +54,7 @@ export interface CodecState {
   convertedImageCodec: string
 }
 
-export type CodecAction = { type: 'SET_DROPDOWN'; payload: { name: string; value: string } }
+export interface CodecAction = { type: 'SET_DROPDOWN'; payload: { name: string; value: string } }
 /////////////////////////////////////////fileConversionTypes////////////////////////////////////
 export type codecPrefs = {
   audio?: string

@@ -97,7 +97,7 @@ export default function FileView(): JSX.Element {
       )
     }
 
-    const renderFiles = (file: DirItem, depth: number = 0): JSX.Element => {
+    const renderFiles = (file: DirItem, depth = 0): JSX.Element => {
       return (
         <tr key={file.path} className="bg-green-300">
           {file.metadata &&
