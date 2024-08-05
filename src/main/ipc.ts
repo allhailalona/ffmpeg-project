@@ -37,7 +37,6 @@ async function handleGetDetails(
       //}
 
       //Pass viewParams here
-      console.log('hello from handleGetDetails, calling getItemDetails for mapped item', dir.path)
       return getItemDetails(dir, viewParams)
     })
   )
@@ -66,25 +65,28 @@ async function handleToggleExpand(
   viewParams: string[]
 ): Promise<DirItem[] | DirItem | null> {
   //dirToToggle must be passed as a whole to index.ts since we need to check the value of isExpanded
-  console.log(dirToToggle)
   try {
+    console.log('hello from handleToggleExpand values are', dirToToggle, viewParams)
     if (!dirToToggle.isExpanded) {
       //find subfolders
       const subfolders = await fs.promises.readdir(dirToToggle.path)
+      console.log('found subfolders', subfolders)
 
       //create a path value for each dir
       const expandedDirToToggle = subfolders.map((dir) => ({
         path: path.join(dirToToggle.path, dir)
       }))
+      console.log('done with expandedDirToToggle value is', expandedDirToToggle)
 
       //detail each path item, since we're inside try{} and not .then() we need to use await
-      const detailedExpandedDirToToggle = await Promise.allSettled(
+      console.log('starting to detail paths')
+      const detailedExpandedDirToToggle = 
+      await Promise.allSettled(
         expandedDirToToggle.map((dir) => {
           //pass viewParams here
           return getItemDetails(dir, viewParams)
         })
-      )
-        .then((results) =>
+      ).then((results) =>
           results.map((result, index) => {
             if (result.status === 'fulfilled') {
               return { ...expandedDirToToggle[index], ...result.value }
@@ -93,19 +95,19 @@ async function handleToggleExpand(
               return expandedDirToToggle[index]
             }
           })
-        )
-        .catch((err) => {
+        ).catch((err) => {
           console.error('Error in TOGGLE_EXPAND detailing handler:', err)
           throw err
         })
+        console.log('done detailing paths, value is', detailedExpandedDirToToggle)
 
       return detailedExpandedDirToToggle
     } else {
-      console.log('dirToToggle is not expanded')
+      console.log('dirToToggle is not expanded NOT DOING ANYTHING!')
       return dirToToggle
     }
   } catch (err) {
-    console.error(err)
+    console.error('error is in handleToggleExpand', err)
     return null
     //don't forget to delete subfolders here!!!
   }

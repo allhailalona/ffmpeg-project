@@ -6,13 +6,16 @@ import { CodecState, CodecAction, MainNavbarProps } from '../../../types'
 const initialState = {
   convertedAudioCodec: '',
   convertedVideoCodec: '',
-  convertedImageCodec: ''
+  convertedImageCodec: '', 
+  isLoading: false
 }
 
 function reducer(state: CodecState, action: CodecAction): CodecState {
   switch (action.type) {
     case 'SET_DROPDOWN':
       return { ...state, [action.payload.name]: action.payload.value }
+    case 'SET_LOADING':
+      return {...state, isLoading: !state.isLoading}
     default:
       return state
   }
@@ -43,7 +46,8 @@ export default function ActionPane({ outputDir }: MainNavbarProps): JSX.Element 
 
   const handleConvertClick = async (): Promise<void> => {
     try {
-      await window.Electron.ipcRenderer.invoke(
+      dispatch({type: 'SET_LOADING', payload: true})
+      await window.electron.ipcRenderer.invoke(
         'CONVERT_EXPLORER',
         explorer,
         {
@@ -55,6 +59,8 @@ export default function ActionPane({ outputDir }: MainNavbarProps): JSX.Element 
       )
     } catch (err) {
       console.error('Error in handleConvertClick', err)
+    } finally {
+      dispatch({type: 'SET_LOADING', payload: false})
     }
   }
 
@@ -69,67 +75,72 @@ export default function ActionPane({ outputDir }: MainNavbarProps): JSX.Element 
         p: 2 // Padding
       }}
     >
-      <Grid container spacing={2} alignItems="center">
-        <Grid item xs={12} md={2}>
-          <Box>Output Codec:</Box>
-        </Grid>
-        <Grid item xs={12} md={8}>
-          <Grid container spacing={2}>
-            <Grid item xs={12} sm={4}>
-              <FormControl fullWidth margin="normal">
-                <InputLabel>Audio Output Codec:</InputLabel>
-                <Select
-                  name="convertedAudioCodec"
-                  value={state.convertedAudioCodec}
-                  onChange={handleSelectChange}
-                  label="convertedAudioCodec"
-                  sx={selectStyle}
-                >
-                  <MenuItem value="opus">opus</MenuItem>
-                  <MenuItem value="mp3">mp3</MenuItem>
-                  <MenuItem value="AAC">AAC</MenuItem>
-                </Select>
-              </FormControl>
-            </Grid>
-            <Grid item xs={12} sm={4}>
-              <FormControl fullWidth margin="normal">
-                <InputLabel>Video Output Codec:</InputLabel>
-                <Select
-                  name="convertedVideoCodec"
-                  value={state.convertedVideoCodec}
-                  onChange={handleSelectChange}
-                  label="convertedVideoCodec"
-                  sx={selectStyle}
-                >
-                  <MenuItem value="AV1">AV1</MenuItem>
-                  <MenuItem value="VP9">VP9</MenuItem>
-                  <MenuItem value="H265">H265</MenuItem>
-                </Select>
-              </FormControl>
-            </Grid>
-            <Grid item xs={12} sm={4}>
-              <FormControl fullWidth margin="normal">
-                <InputLabel>Image Output Codec:</InputLabel>
-                <Select
-                  name="convertedImageCodec"
-                  value={state.convertedImageCodec}
-                  onChange={handleSelectChange}
-                  label="convertedImageCodec"
-                  sx={selectStyle}
-                >
-                  <MenuItem value="AVIF">AVIF</MenuItem>
-                  <MenuItem value="JXL">JPEG XL</MenuItem>
-                </Select>
-              </FormControl>
+      {state.isLoading ? (
+        <h1>Loading...</h1>
+      ) : (
+        <Grid container spacing={2} alignItems="center">
+          <Grid item xs={12} md={2}>
+            <Box>Output Codec:</Box>
+          </Grid>
+          <Grid item xs={12} md={8}>
+            <Grid container spacing={2}>
+              <Grid item xs={12} sm={4}>
+                <FormControl fullWidth margin="normal">
+                  <InputLabel>Audio Output Codec:</InputLabel>
+                  <Select
+                    name="convertedAudioCodec"
+                    value={state.convertedAudioCodec}
+                    onChange={handleSelectChange}
+                    label="convertedAudioCodec"
+                    sx={selectStyle}
+                  >
+                    <MenuItem value="opus">opus</MenuItem>
+                    <MenuItem value="mp3">mp3</MenuItem>
+                    <MenuItem value="aac">AAC</MenuItem>
+                  </Select>
+                </FormControl>
+              </Grid>
+              <Grid item xs={12} sm={4}>
+                <FormControl fullWidth margin="normal">
+                  <InputLabel>Video Output Codec:</InputLabel>
+                  <Select
+                    name="convertedVideoCodec"
+                    value={state.convertedVideoCodec}
+                    onChange={handleSelectChange}
+                    label="convertedVideoCodec"
+                    sx={selectStyle}
+                  >
+                    <MenuItem value="av1">AV1</MenuItem>
+                    <MenuItem value="vp9">VP9</MenuItem>
+                    <MenuItem value="h265">H265</MenuItem>
+                  </Select>
+                </FormControl>
+              </Grid>
+              <Grid item xs={12} sm={4}>
+                <FormControl fullWidth margin="normal">
+                  <InputLabel>Image Output Codec:</InputLabel>
+                  <Select
+                    name="convertedImageCodec"
+                    value={state.convertedImageCodec}
+                    onChange={handleSelectChange}
+                    label="convertedImageCodec"
+                    sx={selectStyle}
+                  >
+                    <MenuItem value="avif">AVIF</MenuItem>
+                    <MenuItem value="jxl">JPEG XL</MenuItem>
+                  </Select>
+                </FormControl>
+              </Grid>
             </Grid>
           </Grid>
+          <Grid item xs={12} md={2} container justifyContent="flex-end">
+            <Button onClick={handleConvertClick} variant="contained" size="large">
+              Convert!
+            </Button>
+          </Grid>
         </Grid>
-        <Grid item xs={12} md={2} container justifyContent="flex-end">
-          <Button onClick={handleConvertClick} variant="contained" size="large">
-            Convert!
-          </Button>
-        </Grid>
-      </Grid>
+      )}
     </Box>
   )
+  
 }

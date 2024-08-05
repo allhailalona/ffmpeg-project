@@ -8,27 +8,29 @@ export default function FileView(): JSX.Element {
   const { explorer, dispatch, viewParams } = useExplorer()
   const { contextMenuProps, showContextMenu } = useContextMenu()
 
+  console.log('welcome to FileView, explorer.length is', explorer?.length ?? 0)
+
   const toggleExpand = async (dirToToggle: DirItem): Promise<void> => {
-    try {
-      //toggle clickedDir
-      dispatch({ type: 'TOGGLE_EXPAND', payload: { dirToToggle } })
+  try {
+    console.log('hello from toggleExpand')
+    console.log('about to toggle explorer', explorer)
 
-      //Pass viewParams here
-      const subfolders = await window.electron.ipcRenderer.invoke(
-        'TOGGLE_EXPAND',
-        dirToToggle,
-        viewParams
-      )
+    const subfolders = await window.electron.ipcRenderer.invoke(
+      'TOGGLE_EXPAND',
+      dirToToggle,
+      viewParams
+    )
 
-      //update explorer
-      dispatch({
-        type: 'TOGGLE_EXPAND',
-        payload: { parentDir: dirToToggle, subfolders }
-      })
-    } catch (err) {
-      console.error(err)
-    }
+    dispatch({
+      type: 'TOGGLE_EXPAND',
+      payload: { dirToToggle, parentDir: dirToToggle, subfolders }
+    })
+
+    console.log('just toggled explorer', explorer)
+  } catch (err) {
+    console.error('the error is in toggleExpand', err)
   }
+}
 
   const handleDragOver = (e: React.DragEvent<HTMLDivElement>): void => {
     e.preventDefault()
@@ -139,7 +141,7 @@ export default function FileView(): JSX.Element {
   }
 
   //make sure page contents are not loaded until async ops are done!
-  if (explorer.length === 0) {
+  if (!explorer || explorer.length === 0) {
     return (
       <div
         onDragOver={handleDragOver}

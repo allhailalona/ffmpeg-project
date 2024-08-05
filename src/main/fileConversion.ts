@@ -13,6 +13,7 @@ async function convertAudio({
   currentOutputDir,
   codecPrefs
 }: ConvertFileParams): Promise<string> {
+  console.log('hello from convertAudio', item, currentOutputDir, codecPrefs)
   const codec = codecPrefs.audio
   let outputFormat, audioCodec, outputOptions
 
@@ -65,6 +66,7 @@ async function convertVideo({
   currentOutputDir,
   codecPrefs
 }: ConvertFileParams): Promise<string> {
+  console.log('hello from convertVideo', item, currentOutputDir, codecPrefs)
   const codec = codecPrefs.video
   let outputFormat, videoCodec, outputOptions
 
@@ -110,6 +112,7 @@ async function convertImage({
   currentOutputDir,
   codecPrefs
 }: ConvertFileParams): Promise<string> {
+  console.log('hello from convertImage', item, currentOutputDir, codecPrefs)
   const codec = codecPrefs.image
   let outputFormat, outputOptions
 
@@ -153,7 +156,7 @@ async function convertVideoTwoPass({
 }: ConvertFileParams): Promise<string> {
   const codec = codecPrefs.video
   if (codec !== 'av1') {
-    return convertVideo(item, currentOutputDir, codecPrefs)
+    return convertVideo({item, currentOutputDir, codecPrefs})
   }
 
   const outputPath = path.join(
@@ -201,6 +204,7 @@ export function getFileType(filePath: string): string {
     wav: 'audio',
     flac: 'audio',
     ogg: 'audio',
+    opus: 'audio',
     jpg: 'image',
     jpeg: 'image',
     png: 'image',
@@ -219,32 +223,35 @@ export async function convertExplorer(
   outputDir: string
 ): Promise<void> {
   try {
-    console.log('hello from convertExplorer, outputDir is', outputDir)
+    console.log('hello from convertExplorer', dirToConvert, codecPrefs, outputDir)
     fs.mkdirSync(path.join(outputDir, 'converted'), { recursive: true })
 
     const convertTo = async (items: DirItem[], currentOutputDir: string): Promise<void> => {
+      console.log('hello from convertTo', items, currentOutputDir, 'codecPrefs are',  codecPrefs)
       await Promise.allSettled(
         items.map(async (item) => {
           if (item.type === 'folder' && item.subfolders) {
             const newOutputDir = path.join(currentOutputDir, item.metadata.name)
             await fs.promises.mkdir(newOutputDir, { recursive: true })
+            console.log('created folder and now calling function again with', item.subfolders, newOutputDir)
             await convertTo(item.subfolders, newOutputDir)
           } else if (item.type === 'file') {
             const fileType = getFileType(item.path)
             try {
               switch (fileType) {
                 case 'audio':
-                  await convertAudio(item, currentOutputDir, codecPrefs)
+                  console.log('this is an audio file', item, currentOutputDir, codecPrefs)
+                  await convertAudio({item, currentOutputDir, codecPrefs})
                   break
                 case 'video':
                   if (codecPrefs.video === 'av1') {
-                    await convertVideoTwoPass(item, currentOutputDir, codecPrefs)
+                    await convertVideoTwoPass({item, currentOutputDir, codecPrefs})
                   } else {
-                    await convertVideo(item, currentOutputDir, codecPrefs)
+                    await convertVideo({item, currentOutputDir, codecPrefs})
                   }
                   break
                 case 'image':
-                  await convertImage(item, currentOutputDir, codecPrefs)
+                  await convertImage({item, currentOutputDir, codecPrefs})
                   break
                 default:
                   console.log(`Unsupported file type: ${fileType}`)
@@ -257,6 +264,7 @@ export async function convertExplorer(
       )
     }
 
+    console.log('passing', dirToConvert, path.join(outputDir, 'converted'), 'to covnertTo')
     await convertTo(dirToConvert, path.join(outputDir, 'converted'))
   } catch (err) {
     console.error('Error in convertExplorer function!', err)

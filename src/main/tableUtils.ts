@@ -72,7 +72,6 @@ async function handleGetMetadata(
   viewParams: string[]
 ): Promise<Record<string, string | number> | null> {
   try {
-    console.log('hello from handleGetMetadata recieved', dir)
     console.log('viewParams are', viewParams)
     const metadata: Record<string, string | number> = {}
 

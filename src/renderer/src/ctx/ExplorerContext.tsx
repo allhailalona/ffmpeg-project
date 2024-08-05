@@ -30,7 +30,7 @@ function updateExplorerRecursively(
 }
 
 //the state is managed automatically and there is no need to explicitly pass it to the function
-function reducer(explorer: DirItem[], action: ExplorerAction): DirItem[] | string | undefined {
+function reducer(explorer: DirItem[], action: ExplorerAction): DirItem[] | [] | undefined {
   switch (action.type) {
     case 'ADD_DIRS': {
       //convert recieved array back to an object so we can properly add it to the explorer
@@ -63,23 +63,22 @@ function reducer(explorer: DirItem[], action: ExplorerAction): DirItem[] | strin
     }
     case 'TOGGLE_EXPAND':
       if (action.payload.dirToToggle !== undefined) {
-        //toggle dir upon click
         action.payload.dirToToggle.isExpanded = !action.payload.dirToToggle.isExpanded
+        return [...explorer]; // Return a new array to trigger a re-render
       } else if (
         action.payload.parentDir !== undefined &&
         action.payload.subfolders !== undefined
       ) {
-        //update explorer
         const result = updateExplorerRecursively(
           explorer,
           action.payload.parentDir,
           action.payload.subfolders
         )
-        return result
+        return result;
       }
-      break
+  return explorer; // Add this line to ensure a value is always returned
     case 'CLEAR_ALL':
-      return ''
+      return []
     //eslint might want to add a break here, but break does some issues... we should always return something from the reducer to avoid having null
     default:
       return explorer

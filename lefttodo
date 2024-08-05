@@ -1,13 +1,12 @@
 		finish contextMenu implementation
 		of course other table stuff
 		
-		clear explorer
 		loading files
 		comparing before and after size
-		
+
 		electron security fix
 
 		vscode issues:
 			remove this annoying window on several occasions
 			copy indenetation perfectly
-			interactive eslinter and prettier
+			interactive eslinter and prettier AND ts jesus christ!

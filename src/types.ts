@@ -52,9 +52,13 @@ export interface CodecState {
   convertedAudioCodec: string
   convertedVideoCodec: string
   convertedImageCodec: string
+  isLoading: boolean
 }
 
-export interface CodecAction = { type: 'SET_DROPDOWN'; payload: { name: string; value: string } }
+export type CodecAction =
+  | { type: 'SET_DROPDOWN'; payload: { name: string; value: string } }
+  | { type: 'SET_LOADING'; payload: boolean }
+
 /////////////////////////////////////////fileConversionTypes////////////////////////////////////
 export type codecPrefs = {
   audio?: string
