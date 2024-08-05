@@ -41,3 +41,28 @@ export interface UseContextMenuReturn {
   hideContextMenu: () => void
   options: Record<string, () => void>
 }
+/////////////////////////////////////////formatSelectionDropdowns///////////////////////////////
+export interface MainNavbarProps {
+  outputDir: string
+  setOutputDir?: (dir: string) => void
+}
+
+export interface CodecState {
+  convertedAudioCodec: string
+  convertedVideoCodec: string
+  convertedImageCodec: string
+}
+
+export type CodecAction = { type: 'SET_DROPDOWN'; payload: { name: string; value: string } }
+/////////////////////////////////////////fileConversionTypes////////////////////////////////////
+export type codecPrefs = {
+  audio?: string
+  video?: string
+  image?: string
+}
+
+export interface ConvertFileParams {
+  item: DirItem
+  currentOutputDir: string
+  codecPrefs: codecPrefs
+}

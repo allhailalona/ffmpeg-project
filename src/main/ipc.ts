@@ -4,18 +4,20 @@ import path from 'path'
 //import iconv from 'iconv-lite'
 //import jschardet from 'jschardet'
 import { DirItem } from '../types' //import the type interface so I can use it in handlers
-import { getItemDetails, browseOutputDir, convertExplorer } from './utils'
+import { getItemDetails, browseOutputDir } from './tableUtils'
+import { convertExplorer } from './fileConversion'
 
 export default function setupIPC(): void {
   ipcMain.handle('GET_DETAILS', handleGetDetails)
   ipcMain.handle('TOGGLE_EXPAND', handleToggleExpand)
   ipcMain.handle('SELECT_DIR_DIALOG', handleSelectDirDialog)
   ipcMain.handle('BROWSE_OUTPUT_DIR', browseOutputDir)
-  ipcMain.handle('CONVERT_EXPLORER', async (_, explorer, codecPrefs, outputDir ) =>
+  ipcMain.handle('CONVERT_EXPLORER', async (_, explorer, codecPrefs, outputDir) =>
     convertExplorer(explorer, codecPrefs, outputDir)
   )
 }
 
+//this file here handles basic actions on the app init
 async function handleGetDetails(
   _event: IpcMainInvokeEvent,
   dirsToDetail: DirItem[] | [],
@@ -120,4 +122,3 @@ async function handleSelectDirDialog(_event: IpcMainInvokeEvent, type: string): 
     return res.filePaths
   }
 }
-

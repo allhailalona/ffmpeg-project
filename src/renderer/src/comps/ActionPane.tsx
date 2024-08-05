@@ -1,6 +1,7 @@
 import { useReducer } from 'react'
 import { Select, MenuItem, FormControl, InputLabel, Button } from '@mui/material'
 import useExplorer from '@renderer/hooks/useExplorer'
+import { CodecState, CodecAction, MainNavbarProps } from '../../../types'
 
 const initialState = {
   convertedAudioCodec: '',
@@ -8,7 +9,7 @@ const initialState = {
   convertedImageCodec: ''
 }
 
-function reducer(state, action) {
+function reducer(state: CodecState, action: CodecAction): CodecState {
   switch (action.type) {
     case 'SET_DROPDOWN':
       return { ...state, [action.payload.name]: action.payload.value }
@@ -25,33 +26,37 @@ const selectStyle = {
   }
 }
 
-export default function ActionPane({ outputDir }): JSX.Element {
-  const [state, dispatch] = useReducer(reducer, initialState)
+export default function ActionPane({ outputDir }: MainNavbarProps): JSX.Element {
+  const [state, dispatch] = useReducer<React.Reducer<CodecState, CodecAction>>(
+    reducer,
+    initialState
+  )
 
   const { explorer } = useExplorer()
 
-  const handleSelectChange = (e) => {
+  const handleSelectChange = (e: React.ChangeEvent<HTMLSelectElement>): void => {
     dispatch({
       type: 'SET_DROPDOWN',
       payload: { name: e.target.name, value: e.target.value }
     })
   }
 
-  const handleConvertClick = async () => {
+  const handleConvertClick = async (): Promise<void> /*for now*/ => {
     try {
-      const res = await window.electron.ipcRenderer.invoke('CONVERT_EXPLORER', 
-        explorer, 
+      await window.Electron.ipcRenderer.invoke(
+        'CONVERT_EXPLORER',
+        explorer,
         {
-          audio: state.convertedAudioCodec, 
-          video: state.convertedVideoCodec, 
-          image: state.convertedImageCodec,
+          audio: state.convertedAudioCodec,
+          video: state.convertedVideoCodec,
+          image: state.convertedImageCodec
         },
         outputDir
-      );
+      )
     } catch (err) {
-      console.error('Error in handleConvertClick', err);
+      console.error('Error in handleConvertClick', err)
     }
-  };
+  }
 
   return (
     <div className="w-full flex flex-row items-center bg-zinc-200">

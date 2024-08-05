@@ -1,7 +1,8 @@
 import { TextField, Button, Box } from '@mui/material'
+import { MainNavbarProps } from 'src/types'
 
-export default function MainNavbar({ outputDir, setOutputDir }): JSX.Element {
-  const handleDirSelect = async () => {
+export default function MainNavbar({ outputDir, setOutputDir }: MainNavbarProps): JSX.Element {
+  const handleDirSelect = async (): Promise<void> => {
     try {
       const result = await window.electron.ipcRenderer.invoke('BROWSE_OUTPUT_DIR')
       if (!result.canceled && result.filePaths.length > 0) {
@@ -12,7 +13,7 @@ export default function MainNavbar({ outputDir, setOutputDir }): JSX.Element {
     }
   }
 
-  const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>): void => {
     setOutputDir(event.target.value)
   }
 

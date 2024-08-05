@@ -8,9 +8,9 @@ export default function App(): JSX.Element {
 
   return (
     <div className="w-screen h-screen p-2">
-      <MainNavbar outputDir={outputDir} setOutputDir={setOutputDir}/>
+      <MainNavbar outputDir={outputDir} setOutputDir={setOutputDir} />
       <FileView />
-      <ActionPane outputDir={outputDir}/>
+      <ActionPane outputDir={outputDir} />
     </div>
   )
 }
